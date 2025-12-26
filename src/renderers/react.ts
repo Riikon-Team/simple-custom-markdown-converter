@@ -1,19 +1,17 @@
 import React, { ReactNode } from "react"
 import { FootnoteResolver } from "../core/resolver"
 import { Node, TableRow } from "../types/node"
-import { RenderElements, RenderOption } from "../types/renderOptions"
-import { ReactRenderElements, ReactRenderOption } from "./reactRenderOptions"
-import { Renderer } from "."
+import { ReactRenderElements, ReactRenderOption } from "../types/options/reactRenderOptions"
+import { MarkdownReactOptions } from "../types/options"
 
-export default class ReactRenderer extends Renderer {
-    option: ReactRenderOption
+export default class ReactRenderer {
+    options: MarkdownReactOptions
 
     footNoteResolver: FootnoteResolver
 
-    constructor(option: ReactRenderOption, footNoteResolver: FootnoteResolver, allowDangerousHtml = false) {
-        super(allowDangerousHtml)
-        this.option = option
+    constructor(footNoteResolver: FootnoteResolver, options: MarkdownReactOptions) {
         this.footNoteResolver = footNoteResolver
+        this.options = options
     }
 
     /**
@@ -54,7 +52,7 @@ export default class ReactRenderer extends Renderer {
 
             Header: (node, children) => React.createElement(
                 `h${node.level}`,
-                { style: { borderBottom: node.level <= 2 && "1px solid #d1d9e0b3" } },
+                { style: { borderBottom: node.level <= 2 ? "1px solid #d1d9e0b3" : undefined } },
                 ...children
             ),
 
@@ -119,12 +117,20 @@ export default class ReactRenderer extends Renderer {
             //Media nodes
             Link: (node) => React.createElement(
                 "a",
-                { href: node.href },
+                {
+                    href: node.href,
+                    //Security reason
+                    target: "_blank",
+                    rel: "noopener"
+                },
                 node.text
             ),
             Image: (node) => React.createElement(
                 "img",
-                { src: node.src, alt: node.alt },
+                {
+                    src: node.src,
+                    alt: node.alt,
+                },
                 null
             ),
 
@@ -136,11 +142,11 @@ export default class ReactRenderer extends Renderer {
             Table: (node, children) => this.renderTable(node, children),
 
             //For HTML
-            HTMLBlock: (node) => this.allowDangerousHtml
+            HTMLBlock: (node) => this.options.converterOptions?.allowDangerousHtml
                 ? React.createElement("div", { dangerouslySetInnerHTML: { __html: node.value } })
                 : React.createElement("code", null, node.value),
 
-            HTMLInline: (node) => this.allowDangerousHtml
+            HTMLInline: (node) => this.options.converterOptions?.allowDangerousHtml
                 ? React.createElement("span", { dangerouslySetInnerHTML: { __html: node.value } })
                 : React.createElement("code", null, node.value),
 
@@ -159,7 +165,7 @@ export default class ReactRenderer extends Renderer {
             }
         }
 
-        return (this.option.elements?.[type] ?? defaultRender[type])!
+        return (this.options.renderOptions?.elements?.[type] ?? defaultRender[type]) as NonNullable<ReactRenderElements[K]>;
     }
 
     private renderTable(node: Node, children: ReactNode[]) {
@@ -209,15 +215,10 @@ export default class ReactRenderer extends Renderer {
     }
 
     private renderFootnotes(): React.ReactNode {
-        const defaultResult = React.createElement(
-            "section",
-            { className: "footnotes" },
-        )
-
         if (this.footNoteResolver.isResolverValid()) {
             const used = this.footNoteResolver.getUsedRef()
 
-            if (used.length === 0) return defaultResult
+            if (used.length === 0) return null
 
             const items = used.map((id, i) => {
                 const def = this.footNoteResolver.getDef(id) ?? ""
@@ -249,6 +250,6 @@ export default class ReactRenderer extends Renderer {
                 )
             )
         }
-        else return defaultResult
+        else return null
     }
 }

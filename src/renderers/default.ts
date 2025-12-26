@@ -1,14 +1,15 @@
 import { FootnoteResolver } from "../core/resolver"
 import { Node, TableRow } from "../types/node"
-import { RenderElements, RenderOption } from "../types/renderOptions"
+import { MarkdownDefaultOptions } from "../types/options"
+import { RenderElements, RenderOption } from "../types/options/renderOptions"
 
 export default class DefaultRenderer {
-    option: RenderOption
+    options: MarkdownDefaultOptions
 
     footNoteResolver: FootnoteResolver
 
-    constructor(option: RenderOption, footNoteResolver: FootnoteResolver) {
-        this.option = option
+    constructor(options: MarkdownDefaultOptions, footNoteResolver: FootnoteResolver) {
+        this.options = options
         this.footNoteResolver = footNoteResolver
     }
 
@@ -60,8 +61,13 @@ export default class DefaultRenderer {
             Table: (node, children) => this.renderTable(node, children),
 
             //For HTML
-            HTMLBlock: (node) => node.value,
-            HTMLInline: (node) => node.value,
+            HTMLBlock: (node) => this.options.converterOptions?.allowDangerousHtml
+                ? node.value
+                : this.escapeHtml(node.value),
+
+            HTMLInline: (node) => this.options.converterOptions?.allowDangerousHtml
+                ? node.value
+                : this.escapeHtml(node.value),
 
             //For footnote
             FootnoteRef: (node) => {
@@ -70,7 +76,7 @@ export default class DefaultRenderer {
             }
         }
 
-        return (this.option.elements?.[type] ?? defaultRender[type])!
+        return (this.options.renderOptions?.elements?.[type] ?? defaultRender[type])!
     }
 
     private renderTable(node: Node, children: string[]) {

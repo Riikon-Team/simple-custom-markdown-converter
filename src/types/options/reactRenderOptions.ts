@@ -1,26 +1,26 @@
-import { Node } from "./node"
+import { Node } from "../node"
 
 /**
  * Function type for rendering an AST node to HTML.
  * 
  * @template T - A subtype of `Node` corresponding to the render node
  * @param node - The AST node to render
- * @param children - Rendered HTML strings of the node's children
+ * @param children - Rendered `ReactNode` of the node's children
  * @returns A HTML string representation of the node
  */
-type NodeRenderer<T extends Node = Node> = (node: T, children: string[]) => string
+type ReactNodeRenderer<T extends Node = Node> = (node: T, children: React.ReactNode[]) => React.ReactNode
 
 /**
  * A mapping of AST node types to custom render functions.
  * 
  * - The key is a `Node["type"]` string literal (e.g. `"Header"`, `"Paragraph"`)
- * - The value is a function `(node, children) => string`:
+ * - The value is a function `(node, children) => React.ReactNode`:
  *      - `node` is a `Node` with its attribute depending on its `type`.
  *      (e.g. `"Header"` nodes include `level`, `"CodeBlock"` nodes include `lang` and `content`, etc)
- *      - `children` is the array of rendered strings of its children.
+ *      - `children` is the array of rendered `ReactNode` of its children.
  */
-export type RenderElements = {
-    [K in Node["type"]]?: NodeRenderer<Extract<Node, { type: K }>>
+export type ReactRenderElements = {
+    [K in Node["type"]]?: ReactNodeRenderer<Extract<Node, { type: K }>>
 }
 
 /**
@@ -39,6 +39,6 @@ export type RenderElements = {
  * ```
  * 
  */
-export type RenderOption = {
-    elements?: RenderElements
+export type ReactRenderOption = {
+    elements?: ReactRenderElements
 }
