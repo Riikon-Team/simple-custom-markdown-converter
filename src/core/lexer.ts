@@ -1,5 +1,5 @@
 import { emit } from "process"
-import { Token } from "./types/token"
+import { Token } from "../types/token"
 import { match } from "assert"
 
 export default class Lexer {

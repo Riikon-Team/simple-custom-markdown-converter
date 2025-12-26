@@ -1,4 +1,4 @@
-import Lexer from "../src/lexer"
+import Lexer from "../src/core/lexer"
 
 describe("Lexer", () => {
     test("Tokenize plain text", () => {

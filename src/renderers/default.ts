@@ -1,8 +1,8 @@
-import { FootnoteResolver } from "./resolver"
-import { Node, TableRow } from "./types/node"
-import { RenderElements, RenderOption } from "./types/renderOptions"
+import { FootnoteResolver } from "../core/resolver"
+import { Node, TableRow } from "../types/node"
+import { RenderElements, RenderOption } from "../types/renderOptions"
 
-export default class Renderer {
+export default class DefaultRenderer {
     option: RenderOption
 
     footNoteResolver: FootnoteResolver

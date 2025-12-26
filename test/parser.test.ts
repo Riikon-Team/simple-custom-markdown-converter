@@ -1,8 +1,8 @@
-import { Parser } from "../src/parser"
+import { Parser } from "../src/core/parser"
 import { Token } from "../src/types/token"
 import { Node } from "../src/types/node"
-import Lexer from "../src/lexer"
-import { FootnoteResolver } from "../src/resolver"
+import Lexer from "../src/core/lexer"
+import { FootnoteResolver } from "../src/core/resolver"
 
 describe("Parser", () => {
     test("Parse plain text paragraph", () => {

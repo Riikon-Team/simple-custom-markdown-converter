@@ -1,5 +1,5 @@
-import Renderer from "../src/renderer"
-import { FootnoteResolver } from "../src/resolver"
+import Renderer from "../src/core/renderer"
+import { FootnoteResolver } from "../src/core/resolver"
 import { Node } from "../src/types/node"
 
 describe("Renderer", () => {

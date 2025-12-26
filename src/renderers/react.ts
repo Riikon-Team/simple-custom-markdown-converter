@@ -1,0 +1,254 @@
+import React, { ReactNode } from "react"
+import { FootnoteResolver } from "../core/resolver"
+import { Node, TableRow } from "../types/node"
+import { RenderElements, RenderOption } from "../types/renderOptions"
+import { ReactRenderElements, ReactRenderOption } from "./reactRenderOptions"
+import { Renderer } from "."
+
+export default class ReactRenderer extends Renderer {
+    option: ReactRenderOption
+
+    footNoteResolver: FootnoteResolver
+
+    constructor(option: ReactRenderOption, footNoteResolver: FootnoteResolver, allowDangerousHtml = false) {
+        super(allowDangerousHtml)
+        this.option = option
+        this.footNoteResolver = footNoteResolver
+    }
+
+    /**
+     * Render a Node (AST) to a HTML string according renderer options
+     * 
+     * @param node - The abstract syntax tree (AST) from the Parser
+     * @returns The rendered HTML string.
+     */
+    render<K extends Node["type"]>(node: Extract<Node, { type: K }>): ReactNode {
+        //Get proper handler type
+        const handler = this.handleRender(node.type)
+        //If node have children, recursive to handle all node's children
+        const children = "children" in node ? node.children.map((ele) => this.render(ele)) : []
+        return handler(node, children)
+    }
+
+    private handleRender<K extends Node["type"]>(type: K): NonNullable<ReactRenderElements[K]> {
+        const defaultRender: ReactRenderElements = {
+            //Base structural nodes
+            Document: (_node, children) => React.createElement(
+                React.Fragment,
+                null,
+                ...children,
+                this.renderFootnotes()
+            ),
+            Paragraph: (_node, children) => React.createElement("p", null, ...children),
+
+            //Container nodes
+            CodeBlock: (node) => React.createElement(
+                "pre",
+                null,
+                React.createElement(
+                    "code",
+                    { className: `lang-${node.lang}` },
+                    node.content
+                )
+            ),
+
+            Header: (node, children) => React.createElement(
+                `h${node.level}`,
+                { style: { borderBottom: node.level <= 2 && "1px solid #d1d9e0b3" } },
+                ...children
+            ),
+
+            Quote: (_node, children) => React.createElement(
+                "blockquote",
+                { style: { margin: "0", padding: "0 1em", color: "#59636e", borderLeft: ".25em solid #d1d9e0" } },
+                ...children
+            ),
+            //For list nodes
+            List: (node, children) => node.ordered ?
+                React.createElement(
+                    "ol",
+                    null,
+                    ...children
+                ) :
+                React.createElement(
+                    "ul",
+                    null,
+                    ...children
+                ),
+            ListItem: (_node, children) => React.createElement(
+                "li",
+                null,
+                ...children
+            ),
+            TaskItem: (node, children) => React.createElement(
+                "li",
+                null,
+                React.createElement(
+                    "input",
+                    {
+                        type: "checkbox",
+                        disabled: true,
+                        checked: !!node.checked,
+                        readOnly: true
+                    },
+                ),
+                ...children
+            ),
+            //Styling nodes
+            Bold: (_node, children) => React.createElement(
+                "strong",
+                null,
+                ...children
+            ),
+            Italic: (_node, children) => React.createElement(
+                "em",
+                null,
+                ...children
+            ),
+            Strikethrough: (_node, children) => React.createElement(
+                "s",
+                null,
+                ...children
+            ),
+            InlineCode: (node) => React.createElement(
+                "code",
+                null,
+                node.content
+            ),
+
+            //Media nodes
+            Link: (node) => React.createElement(
+                "a",
+                { href: node.href },
+                node.text
+            ),
+            Image: (node) => React.createElement(
+                "img",
+                { src: node.src, alt: node.alt },
+                null
+            ),
+
+            //Leaf nodes
+            HorizontalLine: (_node) => React.createElement("hr"),
+            Text: (node) => node.value || "",
+
+            //For table nodes
+            Table: (node, children) => this.renderTable(node, children),
+
+            //For HTML
+            HTMLBlock: (node) => this.allowDangerousHtml
+                ? React.createElement("div", { dangerouslySetInnerHTML: { __html: node.value } })
+                : React.createElement("code", null, node.value),
+
+            HTMLInline: (node) => this.allowDangerousHtml
+                ? React.createElement("span", { dangerouslySetInnerHTML: { __html: node.value } })
+                : React.createElement("code", null, node.value),
+
+            //For footnote
+            FootnoteRef: (node) => {
+                const idx = this.footNoteResolver.getUsedRefById(node.id)
+                return React.createElement(
+                    "sup",
+                    { id: `fnref:${idx}` },
+                    React.createElement(
+                        "a",
+                        { href: `#fn:${idx}`, className: "footnote-ref" },
+                        `[${idx}]`
+                    )
+                )
+            }
+        }
+
+        return (this.option.elements?.[type] ?? defaultRender[type])!
+    }
+
+    private renderTable(node: Node, children: ReactNode[]) {
+        if (node.type === "Table") {
+            const header = node.rows.filter(row => row.isHeader)
+            const body = node.rows.filter(row => !row.isHeader)
+
+            const renderRows = (row: TableRow, rowIndex: number) => {
+                return React.createElement(
+                    "tr",
+                    { key: rowIndex },
+                    row.cells.map((cell, cellIndex) => {
+                        const tag = row.isHeader ? "th" : "td"
+                        return React.createElement(
+                            tag,
+                            { key: cellIndex, style: { textAlign: cell.align as any } },
+                            ...cell.children.map(c => this.render(c))
+                        )
+                    })
+                )
+            }
+
+            const tHead = header.length
+                ? React.createElement(
+                    "thead",
+                    null,
+                    header.map((row, i) => renderRows(row, i))
+                )
+                : null
+
+            const tBody = body.length
+                ? React.createElement(
+                    "tbody",
+                    null,
+                    body.map((row, i) => renderRows(row, i))
+                )
+                : null
+
+            return React.createElement(
+                "table",
+                null,
+                tHead,
+                tBody
+            )
+        }
+        else return React.createElement("p", null, ...children)
+    }
+
+    private renderFootnotes(): React.ReactNode {
+        const defaultResult = React.createElement(
+            "section",
+            { className: "footnotes" },
+        )
+
+        if (this.footNoteResolver.isResolverValid()) {
+            const used = this.footNoteResolver.getUsedRef()
+
+            if (used.length === 0) return defaultResult
+
+            const items = used.map((id, i) => {
+                const def = this.footNoteResolver.getDef(id) ?? ""
+                const idx = i + 1
+
+                return React.createElement(
+                    "li",
+                    { id: `fn:${idx}` },
+                    React.createElement(
+                        "p",
+                        null,
+                        def + " ",
+                        React.createElement(
+                            "a",
+                            { href: `#fnref:${idx}`, className: "footnote-backref" },
+                            "↩"
+                        )
+                    )
+                )
+            })
+
+            return React.createElement(
+                "section",
+                { className: "footnotes" },
+                React.createElement(
+                    "ol",
+                    null,
+                    ...items
+                )
+            )
+        }
+        else return defaultResult
+    }
+}

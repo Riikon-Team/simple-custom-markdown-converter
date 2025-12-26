@@ -1,7 +1,7 @@
-import Lexer from "./lexer";
-import { Parser } from "./parser";
-import Renderer from "./renderer";
-import { FootnoteResolver } from "./resolver";
+import Lexer from "./core/lexer";
+import { Parser } from "./core/parser";
+import Renderer from "./core/renderer";
+import { FootnoteResolver } from "./core/resolver";
 import { RenderOption } from "./types/renderOptions";
 
 export { RenderOption }
