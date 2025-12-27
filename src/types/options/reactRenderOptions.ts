@@ -1,12 +1,12 @@
 import { Node } from "../node"
 
 /**
- * Function type for rendering an AST node to HTML.
+ * Function type for rendering an AST node to a ReactNode.
  * 
  * @template T - A subtype of `Node` corresponding to the render node
  * @param node - The AST node to render
- * @param children - Rendered `ReactNode` of the node's children
- * @returns A HTML string representation of the node
+ * @param children - An array of rendered `ReactNode` from the node's children
+ * @returns A `React.ReactNode` representation of the node
  */
 type ReactNodeRenderer<T extends Node = Node> = (node: T, children: React.ReactNode[]) => React.ReactNode
 
@@ -14,7 +14,7 @@ type ReactNodeRenderer<T extends Node = Node> = (node: T, children: React.ReactN
  * A mapping of AST node types to custom render functions.
  * 
  * - The key is a `Node["type"]` string literal (e.g. `"Header"`, `"Paragraph"`)
- * - The value is a function `(node, children) => React.ReactNode`:
+ * - The value is a function `ReactNodeRenderer` function:
  *      - `node` is a `Node` with its attribute depending on its `type`.
  *      (e.g. `"Header"` nodes include `level`, `"CodeBlock"` nodes include `lang` and `content`, etc)
  *      - `children` is the array of rendered `ReactNode` of its children.
@@ -24,20 +24,26 @@ export type ReactRenderElements = {
 }
 
 /**
- * Options to customize how AST nodes are renderes into HTML
+ * Options to customize how AST nodes are renderes into ReactNode elements
  * 
  * @property elements - Optional custom rendered for one or more node types
  * 
  * @example
- * ```ts
- * const renderOptions: RenderOption = {
- *   elements: {
- *     Paragraph: (_node, children) => `<div class="paragraph">${children.join("")}</div>`,
- *     Bold: (_node, children) => `<b class="bold-text">${children.join("")}</b>`,
+ * ```tsx
+ * // Using JSX (Recommended for most users)
+ * const renderOptions: ReactRenderOption = {
+ *  elements: {
+ *    Paragraph: (_node, children) => <p className="paragraph">{children}</p>,
+ *    Bold: (_node, children) => <strong className="bold-text">{children}</strong>,
+ *  }
+ * }
+ * // Or using React.createElement (Common in library core or without JSX)
+ * const renderOptions: ReactRenderOption = {
+ *  elements: {
+ *    Bold: (_node, children) => React.createElement("b", { className: "bold" }, ...children),
  *   }
  * }
  * ```
- * 
  */
 export type ReactRenderOption = {
     elements?: ReactRenderElements

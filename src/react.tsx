@@ -5,18 +5,21 @@ import { FootnoteResolver } from "./core/resolver";
 import { Parser } from "./core/parser";
 import ReactRenderer from "./renderers/react";
 import { MarkdownReactOptions } from "./types/options";
+import { Node } from "./types/node"
+
+export { MarkdownReactOptions, ReactRenderOption, Node }
 
 /**
  * Convert a Markdown string into a ReactNode.
  * @param input - The Markdown source string
  * @param renderOptions - Optional rendering options
  * @param options - Optional handle options
- * @returns The rendered HTML string
+ * @returns The rendered `React.ReactNode` ready to be rendered into a React component.
  * 
  * @example
- * ```ts
- * const html = convertMarkdownToHTML("Hello **world**")
- * // => <p>Hello <strong>world</strong></p>
+ * ```tsx
+ * const node = convertMarkdownToReactNode("## Hello React");
+ * return <div>{node}</div>;
  * ```
  */
 export function convertMarkdownToReactNode(
@@ -31,9 +34,24 @@ export function convertMarkdownToReactNode(
     return new ReactRenderer(footNoteResolver, options).render(nodes)
 }
 
+/**
+ * A React commponent that renders Markdown content.
+ * Using `React.useMemo` to ensure performance and prevent unnecessary re-render.
+ * @param props.content - The Markdown source to render.
+ * @param props.options - Optional configuration for the renderer. 
+ * @param props.className - Optional CSS classes for the wrapping `div` element.
+ * @example
+ * ```tsx
+ * <MarkdownComponent
+ *    content="**Bold text here**"
+ *    className="markdown markdown-rendered"
+ *    options={{ converterOptions: { allowDangerousHtml: true } }}
+ * />
+ * ```
+ */
 export const MarkdownComponent: React.FC<{
     content: string,
-    options: MarkdownReactOptions
+    options?: MarkdownReactOptions
     className?: string
 }> = ({ content, className, options }) => {
     const rendered = React.useMemo(() => {

@@ -4,8 +4,9 @@ import { FootnoteResolver } from "./core/resolver";
 import DefaultRenderer from "./renderers/default";
 import { MarkdownDefaultOptions } from "./types/options";
 import { RenderOption } from "./types/options/renderOptions";
+import { Node } from "./types/node"
 
-export { RenderOption }
+export { RenderOption, MarkdownDefaultOptions, Node }
 
 /**
  * Convert a Markdown string into HTML.

@@ -27,6 +27,11 @@ export default class DefaultRenderer {
         return handler(node, children)
     }
 
+    /**
+     * Select the appropriate rendering handler for a specific node type
+     * @param type - The type of AST Note
+     * @returns A function take a node and its children to procude a string.
+     */
     private handleRender<K extends Node["type"]>(type: K): NonNullable<RenderElements[K]> {
         const defaultRender: RenderElements = {
             //Base structural nodes

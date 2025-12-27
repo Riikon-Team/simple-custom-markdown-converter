@@ -15,10 +15,10 @@ export default class ReactRenderer {
     }
 
     /**
-     * Render a Node (AST) to a HTML string according renderer options
+     * Render a Node (AST) to a ReactNode according renderer options
      * 
      * @param node - The abstract syntax tree (AST) from the Parser
-     * @returns The rendered HTML string.
+     * @returns The ReactNode representing the rendered Markdown element.
      */
     render<K extends Node["type"]>(node: Extract<Node, { type: K }>): ReactNode {
         //Get proper handler type
@@ -28,6 +28,11 @@ export default class ReactRenderer {
         return handler(node, children)
     }
 
+    /**
+     * Select the appropriate rendering handler for a specific node type
+     * @param type - The type of AST Note
+     * @returns A function take a node and its children to procude a ReactNode.
+     */
     private handleRender<K extends Node["type"]>(type: K): NonNullable<ReactRenderElements[K]> {
         const defaultRender: ReactRenderElements = {
             //Base structural nodes

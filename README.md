@@ -26,7 +26,7 @@ npm install simple-customize-markdown-converter
 ```
 
 ## Usage
-#### 1. Convert markdown to HTML
+### 1. Standard HTML
 ```js
 const input = `
 # Hello World
@@ -40,24 +40,54 @@ Output:
 <p>This is <strong>bold</strong> and <em>italic</em></p>
 ```
 
-#### 2. Customize your converter
+### 2. ReactJS Integration (v1.1.0+)
+Render Markdown directly as ReactJS elements.
+
+#### Using the provided component
+```tsx
+import { MarkdownComponent } from 'simple-customize-markdown-converter/react';
+
+function App() {
+  return (
+    <MarkdownComponent 
+      content="# Hello React" 
+      className="md-body"
+      options={{ converterOptions: { allowDangerousHtml: false } }}
+    />
+  );
+}
+```
+
+#### Using the render function
+```tsx
+import { convertMarkdownToReactNode } from 'simple-customize-markdown-converter/react';
+
+const node = convertMarkdownToReactNode("## Subtitle");
+return <div>{node}</div>;
+```
+## Customization
+
+#### 1. Customize your HTML converter
 You can also customize which HTML should be rendered which every commmon Markdown syntax.
 
 For example: change `<h1>` to `<h5>`, wrap paragraphs in `<div>`, or style bold text:
 ```ts
-const renderOptions: RenderOption = {
-  elements: {
-    Header: (node, children) => {
-        //Customize for only Heading 1
-        if (node.level === 1) {
-            return `<h5 class="custom-h1">${children.join("")}</h5>`
-        }
-        //Keep all remain Heading
-        return `<h${node.level}>${children.join("")}</h${node.level}>`
-    },
-    Paragraph: (_node, children) => `<div class="paragraph">${children.join("")}</div>`,
-    Bold: (_node, children) => `<b class="bold-text">${children.join("")}</b>`,
-  }
+const options: MarkdownDefaultOptions = {
+  renderOptions: {
+    elements: {
+      Header: (node, children) => {
+          //Customize for only Heading 1
+          if (node.level === 1) {
+              return `<h5 class="custom-h1">${children.join("")}</h5>`
+          }
+          //Keep all remain Heading
+          return `<h${node.level}>${children.join("")}</h${node.level}>`
+      },
+      Paragraph: (_node, children) => `<div class="paragraph">${children.join("")}</div>`,
+      Bold: (_node, children) => `<b class="bold-text">${children.join("")}</b>`,
+    }
+  },
+  converterOptions: { allowDangerousHtml: false }
 }
 
 const input = `
@@ -65,7 +95,7 @@ const input = `
 Hello **World**
 `
 
-console.log(convertMarkdownToHTML(input, renderOptions))
+console.log(convertMarkdownToHTML(input, MarkdownDefaultOptions))
 ```
 
 Output:
@@ -73,3 +103,30 @@ Output:
 <h5 class="custom-h1">Title</h5>
 <div class="paragraph">Hello <b class="bold-text">World</b></div>
 ```
+
+#### 2. Customize React Elements
+You can override default elements using `MarkdownReactOptions`.
+```tsx
+import { MarkdownReactOptions } from 'simple-customize-markdown-converter';
+
+const options: MarkdownReactOptions = {
+  renderOptions: {
+    elements: {
+      // Custom Blue Bold text
+      Bold: (_node, children) => <strong style={{ color: 'blue' }}>{children}</strong>,
+      // Custom Link behavior (e.g., for Mentions)
+      Link: (node) => {
+        if (node.href.startsWith('@')) {
+            return <button className="mention">{node.text}</button>;
+        }
+        return <a href={node.href}>{node.text}</a>;
+      }
+    }
+  }
+};
+```
+
+## Security
+By default, HTML tags in Markdown are escaped. To allow raw HTML, explicitly set `allowDangerousHtml: true` in `converterOptions`. Be sure only **enable** this for **trusted** content.
+
+**Note**: Upgrade to `React v19.2.0` or later when using `React 19` for security reason.
