@@ -1,6 +1,6 @@
-import { FootnoteResolver } from "./resolver";
-import { Node, TableCell, TableRow } from "./types/node";
-import { Token } from "./types/token";
+import { FootnoteResolver } from "../core/resolver";
+import { Node, TableCell, TableRow } from "../types/node";
+import { Token } from "../types/token";
 
 export class Parser {
     listToken: Token[]
