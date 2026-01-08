@@ -1,5 +1,5 @@
 import { Token, TokenizerStrategy } from "../../types/token"
-import * as Handlers from "./tokenizer"
+import * as Handlers from "./handler"
 import * as utils from "../../utilities/tokenizer-utils"
 
 export interface ILexer {

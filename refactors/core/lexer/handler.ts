@@ -18,7 +18,7 @@ const CommentHandler: TokenizerStrategy = {
 }
 
 const HtmlHandler: TokenizerStrategy = {
-    name: "Html",
+    name: "HTML",
     match: (lex) => lex.peek() === "<",
     emit: (lex) => {
         //Handle comment
