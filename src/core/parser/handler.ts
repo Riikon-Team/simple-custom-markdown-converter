@@ -72,7 +72,7 @@ const QuoteHandler: ParsingStrategy = {
 }
 
 const ListHandler: ParsingStrategy = {
-    type: "List",
+    type: "ListStart",
     execute: (parser, _token) => utils.parseList(parser)
 }
 
@@ -109,7 +109,7 @@ const ImageHandler: ParsingStrategy = {
 }
 
 const TableHandler: ParsingStrategy = {
-    type: "Table",
+    type: "TableStart",
     execute: (parser, _token) => {
         parser.next(1) // skip TableStart token
         const parseRow = (): TableRow => {
@@ -130,12 +130,13 @@ const TableHandler: ParsingStrategy = {
 
         const parseCell = (): TableCell => {
             const cellStartToken = parser.peek(0)
-            if (cellStartToken?.type !== "CellStart") return { align: "left", children: [] }
-
+            if (cellStartToken?.type !== "CellStart") {
+                return { align: "left", children: [] }
+            }
             parser.next(1) // skip CellStart token
             const childrens = parser.parseInlineUntil("CellEnd", true)
             return {
-                align: cellStartToken.align,
+                align: cellStartToken.align || "left",
                 children: childrens
             }
         }
@@ -180,7 +181,7 @@ const HtmlInlineHandler: ParsingStrategy = {
 const HorizontalLineHandler: ParsingStrategy = {
     type: "HorizontalLine",
     execute: (parser, _token) => {
-        parser.next(0) // skip marker
+        parser.next(1) // skip marker
         return { type: "HorizontalLine" }
     },
 }
@@ -189,8 +190,10 @@ const FootnoteDefHandler: ParsingStrategy = {
     type: "FootnoteDef",
     execute: (parser, _token) => {
         const tok = parser.peek(0)
-        if (tok?.type !== "FootnoteDef") return
-        parser.footNoteResolver.addDef(tok.id, tok.content)
+        if (tok?.type === "FootnoteDef" && tok.id) {
+            parser.footNoteResolver.addDef(tok.id, tok.content || "")
+        }
+        parser.next(1)
     },
 }
 
@@ -199,7 +202,7 @@ const FootnoteRefHandler: ParsingStrategy = {
     execute: (parser, _token) => {
         const tok = parser.peek(0)
         parser.next(1)
-        if (tok?.type !== "FootnoteRef") return { type: "Text", value: "" }
+        if (tok?.type !== "FootnoteRef" || !tok.id) return { type: "Text", value: "" }
         parser.footNoteResolver.addUsedRef(tok.id)
         return { type: "FootnoteRef", id: tok.id }
     },

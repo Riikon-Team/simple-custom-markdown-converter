@@ -37,13 +37,14 @@ function parseListItem(parser: IParser): ASTNode {
     const currentToken = parser.peek(0)
     parser.next(1) // skip marker   
     const children: ASTNode[] = []
+
     while (!parser.isEnd()) {
         const tok = parser.peek(0)
         if (!tok) break
 
         if (tok.type === "NewLine") {
             parser.next(1)
-            continue
+            break
         }
 
         if (tok.type === "ListStart") {

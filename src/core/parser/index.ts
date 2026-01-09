@@ -1,7 +1,7 @@
 import { ASTNode, ParsingStrategy } from '../../types/parser'
 import { Token } from '../../types/token'
 import { FootnoteResolver } from '../resolver/footnote-resolver'
-import * as Handler from './handler.ts'
+import * as Handler from './handler'
 
 export interface IParser {
     listToken: Token[]
@@ -69,11 +69,24 @@ export class Parser implements IParser {
         return this.peek()?.type === "EOF"
     }
 
+    /**
+         * Parse a list token to a node
+         * @return A parsed abstract syntax tree (AST)
+         */
+    parse(): ASTNode {
+        return {
+            type: "Document",
+            children: this.parseBlocks()
+        }
+    }
+
     parseBlocks(): ASTNode[] {
         const listNode: ASTNode[] = []
 
         while (!this.isEnd()) {
             const token = this.peek()
+            if (!token) break
+
             const strategy = this.blockStrategies.get(token?.type || "")
 
             if (strategy) {
@@ -82,7 +95,13 @@ export class Parser implements IParser {
             }
             else {
                 //Fallback to Paragraph node
-                listNode.push(this.parseParagraph())
+                const pNode = this.parseParagraph()
+                if (pNode.children && pNode.children.length > 0) {
+                    listNode.push(pNode)
+                }
+                else {
+                    this.next()
+                }
             }
         }
         return listNode
@@ -95,7 +114,10 @@ export class Parser implements IParser {
         while (!this.isEnd()) {
             const currentNode = this.peek()
             if (!currentNode || stop.includes(currentNode.type)) break
-            if (this.blockStrategies.get(currentNode.type) !== null) break;
+
+            if (this.blockStrategies.get(currentNode.type)) {
+                break;
+            }
 
             const strategy = this.inlineStrategies.get(currentNode.type)
 

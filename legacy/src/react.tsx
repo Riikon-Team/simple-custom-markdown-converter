@@ -1,9 +1,13 @@
-import React from "react"
-import Lexer from "./core/lexer"
-import { Parser } from "./core/parser"
-import { FootnoteResolver } from "./core/resolver/footnote-resolver"
-import { ReactRenderer } from "./renderers/react"
-import { MarkdownOptions } from "./types/options"
+import React from "react";
+import { ReactRenderOption } from "./types/options/reactRenderOptions";
+import Lexer from "./core/lexer";
+import { FootnoteResolver } from "./core/resolver";
+import { Parser } from "./core/parser";
+import ReactRenderer from "./renderers/react";
+import { MarkdownReactOptions } from "./types/options";
+import { Node } from "./types/node"
+
+export { MarkdownReactOptions, ReactRenderOption, Node }
 
 /**
  * Convert a Markdown string into a ReactNode.
@@ -20,7 +24,7 @@ import { MarkdownOptions } from "./types/options"
  */
 export function convertMarkdownToReactNode(
     input: string,
-    options: MarkdownOptions<React.ReactNode> = {
+    options: MarkdownReactOptions = {
         renderOptions: {},
         converterOptions: { allowDangerousHtml: false }
     }): React.ReactNode {
@@ -47,7 +51,7 @@ export function convertMarkdownToReactNode(
  */
 export const MarkdownComponent: React.FC<{
     content: string,
-    options?: MarkdownOptions<React.ReactNode>
+    options?: MarkdownReactOptions
     className?: string
 }> = ({ content, className, options }) => {
     const rendered = React.useMemo(() => {
