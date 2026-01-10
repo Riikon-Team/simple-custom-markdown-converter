@@ -1,12 +1,18 @@
-import Lexer from "./core/lexer";
-import { Parser } from "./core/parser";
-import { FootnoteResolver } from "./core/resolver";
-import DefaultRenderer from "./renderers/default";
-import { MarkdownDefaultOptions } from "./types/options";
-import { RenderOption } from "./types/options/renderOptions";
-import { Node } from "./types/node"
+import Lexer from "./core/lexer"
+import { Parser } from "./core/parser"
+import { FootnoteResolver } from "./core/resolver/footnote-resolver"
+import { DefaultRenderer } from "./renderers/default"
+import { MarkdownOptions } from "./types/options"
+import { Token, TokenizerStrategy } from './types/token'
+import { ASTNode, ParsingStrategy } from './types/parser'
+import { RenderStrategy } from './types/renderer'
 
-export { RenderOption, MarkdownDefaultOptions, Node }
+export {
+    MarkdownOptions,
+    Token, TokenizerStrategy,
+    ASTNode, ParsingStrategy,
+    RenderStrategy
+}
 
 /**
  * Convert a Markdown string into HTML.
@@ -20,12 +26,12 @@ export { RenderOption, MarkdownDefaultOptions, Node }
  * // => <p>Hello <strong>world</strong></p>
  * ```
  */
-export function convertMarkdownToHTML(input: string, options: MarkdownDefaultOptions = {
+export function convertMarkdownToHTML(input: string, options: MarkdownOptions<string> = {
     renderOptions: {},
     converterOptions: { allowDangerousHtml: false }
 }): string {
     const tokens = new Lexer(input).tokenize()
     const footNoteResolver = new FootnoteResolver()
     const nodes = new Parser(tokens, footNoteResolver).parse()
-    return new DefaultRenderer(options, footNoteResolver).render(nodes)
+    return new DefaultRenderer(footNoteResolver, options).render(nodes)
 }

@@ -1,11 +1,13 @@
 {
   "name": "simple-customize-markdown-converter",
-  "version": "1.1.0",
-  "description": "Convert Markdown to your customize HTML",
+  "version": "1.2.0",
+  "description": "Transform Markdown into fully customizable HTML or React components.",
   "keywords": [
     "markdown",
     "html",
-    "converter"
+    "converter",
+    "react-markdown",
+    "typescript"
   ],
   "author": "Regiko04",
   "license": "MIT",

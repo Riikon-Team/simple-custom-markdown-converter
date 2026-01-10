@@ -1,5 +1,5 @@
 /**
- * General option for the render process.
+ * General option for the render process,
  * These rules define high-level behavior for render process.
  */
 export type ConvertOption = {

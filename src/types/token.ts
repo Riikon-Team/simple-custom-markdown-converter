@@ -1,3 +1,5 @@
+import { ILexer } from "../core/lexer";
+
 /**
  * Token produced by the Markdown lexer.
  *
@@ -33,31 +35,139 @@
  * - FootnodeRef: The reference of a footnote
  * - EOF: A special token, this is the end of input.
  */
-export type Token =
-    | { type: "Header", level: number }
-    | { type: "CodeBlock", lang: string, content: string }
-    | { type: "NewLine" }
-    | { type: "Bold" }
-    | { type: "Italic" }
-    | { type: "Strikethrough" }
-    | { type: "InlineCode", content: string }
-    | { type: "Quote" }
-    | { type: "ListStart", ordered: boolean, level: number }
-    | { type: "ListItem" }
-    | { type: "TaskItem", checked: boolean }
-    | { type: "ListEnd" }
-    | { type: "Link", text: string, href: string }
-    | { type: "Image", src: string, alt: string }
-    | { type: "HorizontalLine" }
-    | { type: "Text", value: string }
-    | { type: "TableStart" }
-    | { type: "TableEnd" }
-    | { type: "RowStart", isHeader: boolean }
-    | { type: "RowEnd" }
-    | { type: "CellStart", align: "left" | "center" | "right" }
-    | { type: "CellEnd" }
-    | { type: "HTMLBlock", value: string }
-    | { type: "HTMLInline", value: string }
-    | { type: "FootnoteDef", id: string, content: string }
-    | { type: "FootnoteRef", id: string }
-    | { type: "EOF" }
+export type DefaultTokenType =
+    | "Header"
+    | "CodeBlock"
+    | "NewLine"
+    | "Bold"
+    | "Italic"
+    | "Strikethrough"
+    | "InlineCode"
+    | "Quote"
+    | "ListStart"
+    | "ListItem"
+    | "TaskItem"
+    | "ListEnd"
+    | "Link"
+    | "Image"
+    | "HorizontalLine"
+    | "Text"
+    | "TableStart"
+    | "TableEnd"
+    | "RowStart"
+    | "RowEnd"
+    | "CellStart"
+    | "CellEnd"
+    | "HTMLBlock"
+    | "HTMLInline"
+    | "FootnoteDef"
+    | "FootnoteRef"
+    | "EOF";
+
+export type TokenType = DefaultTokenType | (string & {})
+
+
+/**
+ * Token produced by the Markdown lexer. 
+ * 
+ * Tokens are the intermediate representation between raw text and the AST.
+ */
+export interface Token {
+    /**
+     * The category of the token.
+     * @see {@link DefaultTokenType} for the list of built-in types.
+     */
+    type: TokenType;
+
+    /**
+     * Raw text or value associated with the token.
+     * Commonly used in: `Text`, `HTMLBlock`, `HTMLInline`.
+     */
+    value?: string;
+
+    /**
+     * The nesting level or importance.
+     * Commonly used in: `Header` (level 1-6).
+     */
+    level?: number;
+
+    /**
+     * Language identifier for code fences.
+     * Commonly used in: `CodeBlock`.
+     */
+    lang?: string;
+
+    /**
+     * The main body of text within a token.
+     * Commonly used in: `CodeBlock`, `InlineCode`.
+     */
+    content?: string;
+
+    /**
+     * Destination URL for links or images.
+     * Commonly used in: `Link`, `Image`.
+     */
+    href?: string;
+
+    /**
+     * Display text for links.
+     * Commonly used in: `Link`.
+     */
+    text?: string;
+
+    /**
+     * Source path/URL for images.
+     * Commonly used in: `Image`.
+     */
+    src?: string;
+
+    /**
+     * Accessible alternative text.
+     * Commonly used in: `Image`.
+     */
+    alt?: string;
+
+    /**
+     * Alignment for table cells.
+     * Commonly used in: `CellStart` ("left", "center", "right").
+     */
+    align?: "left" | "center" | "right";
+
+    /**
+     * For task lists, indicates completion.
+     * Commonly used in: `TaskItem` (true if `[x]`).
+     */
+    checked?: boolean;
+
+    /**
+     * Unique identifier for footnotes.
+     * Commonly used in: `FootnoteDef`, `FootnoteRef`.
+     */
+    id?: string;
+
+    /**
+     * All other properties used by custom `Token`.
+     */
+    [key: string]: any;
+}
+
+/**
+ * A Strategy pattern for handle tokenizing input.
+ * @property type - Strategy's type.
+ * @property match - A function check current cursor position matched the syntax to be processed by `emit` function.
+ * @property emit - A function handle tokenizing input to `Token`.
+ */
+export interface TokenizerStrategy {
+    name: string
+    /**
+     * Checks if the current cursor position in the Lexer matches this syntax
+     * @param lex The current `ILexer` instance providing access to the input string and cursor.
+     * @returns True if this strategy should handle the current input.
+     */
+    match: (lex: ILexer) => boolean
+    /**
+     * Consumes the input and produce Tokens added in ILexer implementation class.
+     * @param lex The `ILexer` instance to advance the cursor and store results.
+     */
+    emit: (lex: ILexer) => void
+}

@@ -1,8 +1,8 @@
-import { Parser } from "../src/core/parser";
-import { Token } from "../src/types/token";
-import { ASTNode } from "../src/types/parser";
-import Lexer from "../src/core/lexer";
-import { FootnoteResolver } from "../src/core/resolver/footnote-resolver";
+import { Parser } from "../src/core/parser"
+import { Token } from "../src/types/token"
+import { Node } from "../src/types/node"
+import Lexer from "../src/core/lexer"
+import { FootnoteResolver } from "../src/core/resolver"
 
 describe("Parser", () => {
     test("Parse plain text paragraph", () => {
@@ -10,12 +10,12 @@ describe("Parser", () => {
             { type: "Text", value: "hello" },
             { type: "NewLine" },
             { type: "EOF" },
-        ];
+        ]
 
-        const parser = new Parser(tokens, new FootnoteResolver());
-        const ast = parser.parse();
+        const parser = new Parser(tokens, new FootnoteResolver())
+        const ast = parser.parse()
 
-        expect(ast).toEqual<ASTNode>({
+        expect(ast).toEqual<Node>({
             type: "Document",
             children: [
                 {
@@ -23,8 +23,8 @@ describe("Parser", () => {
                     children: [{ type: "Text", value: "hello" }],
                 },
             ],
-        });
-    });
+        })
+    })
 
     test("Parse header with text", () => {
         const tokens: Token[] = [
@@ -32,12 +32,12 @@ describe("Parser", () => {
             { type: "Text", value: "title" },
             { type: "NewLine" },
             { type: "EOF" },
-        ];
+        ]
 
-        const parser = new Parser(tokens, new FootnoteResolver());
-        const ast = parser.parse();
+        const parser = new Parser(tokens, new FootnoteResolver())
+        const ast = parser.parse()
 
-        expect(ast).toEqual<ASTNode>({
+        expect(ast).toEqual<Node>({
             type: "Document",
             children: [
                 {
@@ -46,8 +46,8 @@ describe("Parser", () => {
                     children: [{ type: "Text", value: "title" }],
                 },
             ],
-        });
-    });
+        })
+    })
 
     test("Parse bold inside paragraph", () => {
         const tokens: Token[] = [
@@ -57,12 +57,12 @@ describe("Parser", () => {
             { type: "Bold" },
             { type: "NewLine" },
             { type: "EOF" },
-        ];
+        ]
 
-        const parser = new Parser(tokens, new FootnoteResolver());
-        const ast = parser.parse();
+        const parser = new Parser(tokens, new FootnoteResolver())
+        const ast = parser.parse()
 
-        expect(ast).toEqual<ASTNode>({
+        expect(ast).toEqual<Node>({
             type: "Document",
             children: [
                 {
@@ -76,19 +76,19 @@ describe("Parser", () => {
                     ],
                 },
             ],
-        });
-    });
+        })
+    })
 
     test("Parse code block", () => {
         const tokens: Token[] = [
             { type: "CodeBlock", lang: "js", content: "console.log(1)" },
             { type: "EOF" },
-        ];
+        ]
 
-        const parser = new Parser(tokens, new FootnoteResolver());
-        const ast = parser.parse();
+        const parser = new Parser(tokens, new FootnoteResolver())
+        const ast = parser.parse()
 
-        expect(ast).toEqual<ASTNode>({
+        expect(ast).toEqual<Node>({
             type: "Document",
             children: [
                 {
@@ -97,8 +97,8 @@ describe("Parser", () => {
                     content: "console.log(1)",
                 },
             ],
-        });
-    });
+        })
+    })
 
     test("Parse inline code inside paragraph", () => {
         const tokens: Token[] = [
@@ -106,12 +106,12 @@ describe("Parser", () => {
             { type: "InlineCode", content: "npm start" },
             { type: "NewLine" },
             { type: "EOF" },
-        ];
+        ]
 
-        const parser = new Parser(tokens, new FootnoteResolver());
-        const ast = parser.parse();
+        const parser = new Parser(tokens, new FootnoteResolver())
+        const ast = parser.parse()
 
-        expect(ast).toEqual<ASTNode>({
+        expect(ast).toEqual<Node>({
             type: "Document",
             children: [
                 {
@@ -122,15 +122,14 @@ describe("Parser", () => {
                     ],
                 },
             ],
-        });
-    });
+        })
+    })
 
     test("Parse table", () => {
         const md = "| Name  | Age |\n|-------|----:|\n| Alice |  24 |\n| Bob   |  30 |";
-        const tokens = new Lexer(md).tokenize();
-        const parser = new Parser(tokens, new FootnoteResolver());
-        
-        expect(parser.parse()).toEqual<ASTNode>({
+        const token = new Lexer(md).tokenize()
+        const parser = new Parser(token, new FootnoteResolver())
+        expect(parser.parse()).toEqual<Node>({
             type: "Document",
             children: [{
                 type: "Table",
@@ -158,6 +157,6 @@ describe("Parser", () => {
                     },
                 ]
             }]
-        });
-    });
-});
+        })
+    })
+})

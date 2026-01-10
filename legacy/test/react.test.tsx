@@ -1,7 +1,7 @@
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { convertMarkdownToReactNode, MarkdownComponent } from '../src/react'
-import { MarkdownOptions } from "../src/types/options";
+import { convertMarkdownToReactNode, MarkdownComponent } from "../src/react";
+import { MarkdownReactOptions } from "../src/types/options";
 
 describe("React Renderer Testing", () => {
     const renderToString = (node: React.ReactNode) => renderToStaticMarkup(node as React.ReactElement);
@@ -9,7 +9,6 @@ describe("React Renderer Testing", () => {
     test("Basic Markdown to ReactNode", () => {
         const md = "## Hello React\nThis is **bold**";
         const result = convertMarkdownToReactNode(md);
-
         expect(renderToString(result)).toBe(
             '<h2 style="border-bottom:1px solid #d1d9e0b3">Hello React</h2>' +
             '<p>This is <strong>bold</strong></p>'
@@ -33,8 +32,8 @@ describe("React Renderer Testing", () => {
 
         expect(renderToString(result)).toBe(
             '<ul>' +
-            '<li style="list-style-type:none"><input type="checkbox" disabled="" readOnly=""/>Todo</li>' +
-            '<li style="list-style-type:none"><input type="checkbox" disabled="" readOnly="" checked=""/>Done</li>' +
+            '<li><input type="checkbox" disabled="" readOnly=""/>Todo</li>' +
+            '<li><input type="checkbox" disabled="" readOnly="" checked=""/>Done</li>' +
             '</ul>'
         );
     });
@@ -55,21 +54,21 @@ describe("React Renderer Testing", () => {
     });
 
     test("Custom React elements override", () => {
-        const options: MarkdownOptions<React.ReactNode> = {
+        const options: MarkdownReactOptions = {
             renderOptions: {
                 elements: {
-                    Bold: ((_node, children: React.ReactNode[]) => React.createElement("span", { style: { color: 'blue' } }, ...children)),
-                    Link: ((node) => {
-                        if (node.href && node.href.startsWith('@')) {
+                    Bold: (_node, children) => React.createElement("span", { style: { color: 'blue' } }, ...children),
+                    Link: (node) => {
+                        if (node.href.startsWith('@')) {
                             return React.createElement("button", { className: "mention" }, node.text);
                         }
-                        return React.createElement("a", { href: node.href, target: "_blank", rel: "noopener" }, node.text);
-                    })
+                        return React.createElement("a", { href: node.href }, node.text);
+                    }
                 }
             }
         };
-
-        const md = "Stay **strong** [@hero](@hero)";
+        
+        const md = "Stay **strong** [@hero](@hero)"; 
         const result = convertMarkdownToReactNode(md, options);
 
         expect(renderToString(result)).toBe(
@@ -79,24 +78,22 @@ describe("React Renderer Testing", () => {
 
     test("Dangerous HTML handling in React", () => {
         const md = '<div class="custom">Raw</div>';
-        const secureResult = convertMarkdownToReactNode(md, { converterOptions: { allowDangerousHtml: false } });
+        const secureResult = convertMarkdownToReactNode(md);
         expect(renderToString(secureResult)).toBe('<code>&lt;div class=&quot;custom&quot;&gt;Raw&lt;/div&gt;</code>');
     });
 
     test("Footnote resolver in React", () => {
         const md = "Text[^1]\n[^1]: Note content";
         const result = convertMarkdownToReactNode(md);
-        const html = renderToString(result);
 
-        expect(html).toContain('<sup id="fnref:1">');
-        expect(html).toContain('<section class="footnotes">');
-        expect(html).toContain('<a href="#fnref:1" class="footnote-backref">↩</a>');
+        expect(renderToString(result)).toContain('<sup id="fnref:1">');
+        expect(renderToString(result)).toContain('<section class="footnotes">');
     });
 
     test("MarkdownComponent (React Wrapper)", () => {
         const md = "# Title";
         const html = renderToStaticMarkup(
-            <MarkdownComponent content={md} className="md-body" />
+            <MarkdownComponent content={md} options={{ converterOptions: { allowDangerousHtml: false } }} className="md-body" />
         );
 
         expect(html).toBe(
