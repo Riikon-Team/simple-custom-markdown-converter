@@ -3,6 +3,16 @@ import { Parser } from "./core/parser"
 import { FootnoteResolver } from "./core/resolver/footnote-resolver"
 import { DefaultRenderer } from "./renderers/default"
 import { MarkdownOptions } from "./types/options"
+import { Token, TokenizerStrategy } from './types/token'
+import { ASTNode, ParsingStrategy } from './types/parser'
+import { RenderStrategy } from './types/renderer'
+
+export {
+    MarkdownOptions,
+    Token, TokenizerStrategy,
+    ASTNode, ParsingStrategy,
+    RenderStrategy
+}
 
 /**
  * Convert a Markdown string into HTML.

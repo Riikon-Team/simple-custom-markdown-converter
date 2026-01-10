@@ -1,8 +1,8 @@
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { ASTNode } from "../src/types/parser";
 import { convertMarkdownToReactNode, MarkdownComponent } from '../src/react'
 import { MarkdownOptions } from "../src/types/options";
+
 describe("React Renderer Testing", () => {
     const renderToString = (node: React.ReactNode) => renderToStaticMarkup(node as React.ReactElement);
 
@@ -58,8 +58,8 @@ describe("React Renderer Testing", () => {
         const options: MarkdownOptions<React.ReactNode> = {
             renderOptions: {
                 elements: {
-                    Bold: ((_node: ASTNode, children: React.ReactNode[]) => React.createElement("span", { style: { color: 'blue' } }, ...children)) as any,
-                    Link: ((node: ASTNode) => {
+                    Bold: ((_node, children: React.ReactNode[]) => React.createElement("span", { style: { color: 'blue' } }, ...children)),
+                    Link: ((node) => {
                         if (node.href && node.href.startsWith('@')) {
                             return React.createElement("button", { className: "mention" }, node.text);
                         }

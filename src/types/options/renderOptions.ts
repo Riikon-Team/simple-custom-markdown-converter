@@ -21,10 +21,10 @@ type GenericNodeRenderer<TOutput, TNode extends ASTNode = ASTNode> =
  */
 export type GenericRenderElements<TOutput> = {
     //For known AST nodes
-    [K in ASTNode["type"]]?: GenericNodeRenderer<TOutput, Extract<ASTNode, { type: K }>>
+    [K in ASTNode["type"]]?: GenericNodeRenderer<TOutput, ASTNode>
 } & {
     //Custom nodes or extensions
-    [key: string]: GenericNodeRenderer<TOutput, any>
+    [key: string]: GenericNodeRenderer<TOutput, any> | undefined
 }
 
 

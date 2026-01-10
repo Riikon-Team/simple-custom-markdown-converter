@@ -52,7 +52,7 @@ export const MarkdownComponent: React.FC<{
 }> = ({ content, className, options }) => {
     const rendered = React.useMemo(() => {
         return convertMarkdownToReactNode(content, options)
-    }, [content, options])
+    }, [content])
 
     return React.createElement("div", { className }, rendered)
 }

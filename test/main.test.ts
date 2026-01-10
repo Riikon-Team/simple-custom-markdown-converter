@@ -1,6 +1,5 @@
 import { convertMarkdownToHTML } from "../src/index";
 import { RenderOption } from "../src/types/options/renderOptions";
-import { ASTNode } from "../src/types/parser";
 
 describe("Test a whole markdown", () => {
     test("A single sentences", () => {
@@ -61,12 +60,12 @@ describe("Test a whole markdown", () => {
     test("Basic customize render", () => {
         const renderOptions: RenderOption<string> = {
             elements: {
-                Header: (node: ASTNode, children) => {
+                Header: (node, children) => {
                     if (node.level === 1) return `<h5 class="custom-h1">${children.join("")}</h5>`;
                     return `<h${node.level}>${children.join("")}</h${node.level}>`;
                 },
-                Paragraph: (_node: ASTNode, children) => `<div class="paragraph">${children.join("")}</div>`,
-                Bold: (_node: ASTNode, children) => `<b class="bold-text">${children.join("")}</b>`,
+                Paragraph: (_node, children) => `<div class="paragraph">${children.join("")}</div>`,
+                Bold: (_node, children) => `<b class="bold-text">${children.join("")}</b>`,
             }
         }
 
