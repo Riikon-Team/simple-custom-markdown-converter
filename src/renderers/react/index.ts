@@ -5,6 +5,7 @@ import { ASTNode, TableRow } from "../../types/parser";
 import { RenderStrategy } from "../../types/renderer";
 import { FootnoteResolver } from "../../core/resolver/footnote-resolver";
 import * as Handlers from "./handler";
+import { getClassName } from "../../utilities/renderer-utils";
 
 export class ReactRenderer implements IRenderer<React.ReactNode> {
     options: MarkdownOptions<React.ReactNode>
@@ -135,11 +136,11 @@ export class ReactRenderer implements IRenderer<React.ReactNode> {
 
             return React.createElement(
                 "table",
-                null,
+                { className: getClassName(this, node), },
                 tHead,
                 tBody
             )
         }
-        else return React.createElement("p", null, ...children)
+        else return React.createElement("p", { className: getClassName(this, node), }, ...children)
     }
 }

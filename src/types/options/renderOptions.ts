@@ -1,4 +1,4 @@
-import { ASTNode } from '../parser';
+import { ASTNode, NodeType } from '../parser';
 
 /**
  * A strategy function type for rendering a specific AST node.
@@ -31,8 +31,15 @@ export type GenericRenderElements<TOutput> = {
 /**
  * Options for customizing the rendering process for a specific output type.
  * @template TOutput - The output type.
+ * @property className - Customize classname for one or more ASTNode types.
+ * @property elements - Optional custom rendered for one or more ASTNode types
  */
 export interface RenderOption<TOutput> {
+    /**
+     * Use "Header" for all levels
+     * Use additional "Header1", "Header2"... "Header6" for specific header level
+     */
+    className?: Partial<Record<NodeType | "Header1" | "Header2" | "Header3" | "Header4" | "Header5" | "Header6", string>>
     elements?: GenericRenderElements<TOutput>
 }
 
@@ -56,7 +63,7 @@ export type ReactRenderElements = GenericRenderElements<React.ReactNode>;
 
 /**
  * Options to customize how AST nodes are renderes into HTML
- * @deprecated Use {@link RenderOption<string>} for generic support.
+ * @deprecated Use {@link RenderOption<string>} instead to use newer options.
  * 
  * @property elements - Optional custom rendered for one or more node types
  * @example
@@ -77,7 +84,7 @@ export type DefaultRenderOption = {
 
 /**
  * Options to customize how AST nodes are renderes into ReactNode elements
- * @deprecated Use {@link RenderOption<React.ReactNode>} for generic support.
+ * @deprecated Use {@link RenderOption<React.ReactNode>} instead to use newer options.
  * 
  * @property elements - Optional custom rendered for one or more node types
  * @example

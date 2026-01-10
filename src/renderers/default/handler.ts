@@ -1,4 +1,5 @@
 import { RenderStrategy } from "../../types/renderer"
+import { escapeHtml, getClassName } from "../../utilities/renderer-utils";
 
 //Base structural nodes
 export const DocumentHandler: RenderStrategy<string> = {
@@ -8,86 +9,125 @@ export const DocumentHandler: RenderStrategy<string> = {
 
 export const ParagraphHandler: RenderStrategy<string> = {
     type: "Paragraph",
-    render: (_node, children) => `<p>${children.join("")}</p>`
+    render: (node, children, ctx) => {
+        const cls = getClassName(ctx, node);
+        return `<p${cls ? ` class="${cls}"` : ""}>${children.join("")}</p>`;
+    }
 }
 
 //Container nodes
 export const CodeBlockHandler: RenderStrategy<string> = {
     type: "CodeBlock",
-    render: (node) => `<pre><code class="lang-${node.lang}">${escapeHtml(node.content || "")}</code></pre>`,
+    render: (node, _children, ctx) => {
+        const cls = getClassName(ctx, node, `lang-${node.lang}`);
+        return `<pre><code${cls ? ` class="${cls}"` : ""}>${escapeHtml(node.content || "")}</code></pre>`;
+    }
 }
 
 export const HeaderHandler: RenderStrategy<string> = {
     type: "Header",
-    render: (node, children) => {
+    render: (node, children, ctx) => {
         if (node.level) {
-            const style = node.level <= 2 ? ' style="border-bottom: 1px solid #d1d9e0b3"' : ''
-            return `<h${node.level}${style}>${children.join("")}</h${node.level}>`
+            const cls = getClassName(ctx, node);
+            const classAttr = cls ? ` class="${cls}"` : "";
+            const style = node.level <= 2 ? ' style="border-bottom: 1px solid #d1d9e0b3"' : '';
+            return `<h${node.level}${classAttr}${style}>${children.join("")}</h${node.level}>`;
         }
-        return `<p>${children.join("")}</p>`
+        return `<p>${children.join("")}</p>`;
     }
 }
 
 export const QuoteHandler: RenderStrategy<string> = {
     type: "Quote",
-    render: (_node, children) =>
-        `<blockquote style="margin:0; padding:0 1em; color:#59636e; border-left:.25em solid #d1d9e0;">${children.join("")}</blockquote>`
+    render: (node, children, ctx) => {
+        const cls = getClassName(ctx, node);
+        const classAttr = cls ? ` class="${cls}"` : "";
+        return `<blockquote${classAttr} style="margin:0; padding:0 1em; color:#59636e; border-left:.25em solid #d1d9e0;">${children.join("")}</blockquote>`;
+    }
 }
 
 //For list nodes
 export const ListHandler: RenderStrategy<string> = {
     type: "List",
-    render: (node, children) =>
-        node.ordered ? `<ol>${children.join("")}</ol>` : `<ul>${children.join("")}</ul>`
+    render: (node, children, ctx) => {
+        const cls = getClassName(ctx, node);
+        const classAttr = cls ? ` class="${cls}"` : "";
+        return node.ordered ? `<ol${classAttr}>${children.join("")}</ol>` : `<ul${classAttr}>${children.join("")}</ul>`;
+    }
 }
 
 export const ListItemHandler: RenderStrategy<string> = {
     type: "ListItem",
-    render: (_node, children) => `<li>${children.join("")}</li>`
+    render: (node, children, ctx) => {
+        const cls = getClassName(ctx, node);
+        return `<li${cls ? ` class="${cls}"` : ""}>${children.join("")}</li>`;
+    }
 }
 
 export const TaskItemHandler: RenderStrategy<string> = {
     type: "TaskItem",
-    render: (node, children) =>
-        `<li><input type="checkbox" disabled ${node.checked ? "checked" : ""}>${children.join("")}</li>`
+    render: (node, children, ctx) => {
+        const cls = getClassName(ctx, node);
+        return `<li${cls ? ` class="${cls}"` : ""} style="list-style-type: none"><input type="checkbox" disabled ${node.checked ? "checked" : ""}>${children.join("")}</li>`;
+    }
 }
-
 //Styling nodes
 export const BoldHandler: RenderStrategy<string> = {
     type: "Bold",
-    render: (_node, children) => `<strong>${children.join("")}</strong>`
+    render: (node, children, ctx) => {
+        const cls = getClassName(ctx, node);
+        return `<strong${cls ? ` class="${cls}"` : ""}>${children.join("")}</strong>`;
+    }
 }
 
 export const ItalicHandler: RenderStrategy<string> = {
     type: "Italic",
-    render: (_node, children) => `<em>${children.join("")}</em>`
+    render: (node, children, ctx) => {
+        const cls = getClassName(ctx, node);
+        return `<em${cls ? ` class="${cls}"` : ""}>${children.join("")}</em>`;
+    }
 }
 
 export const StrikethroughHandler: RenderStrategy<string> = {
     type: "Strikethrough",
-    render: (_node, children) => `<s>${children.join("")}</s>`
+    render: (node, children, ctx) => {
+        const cls = getClassName(ctx, node);
+        return `<s${cls ? ` class="${cls}"` : ""}>${children.join("")}</s>`;
+    }
 }
 
 export const InlineCodeHandler: RenderStrategy<string> = {
     type: "InlineCode",
-    render: (node, _children) => `<code>${escapeHtml(node.content || "")}</code>`
+    render: (node, _children, ctx) => {
+        const cls = getClassName(ctx, node);
+        return `<code${cls ? ` class="${cls}"` : ""}>${escapeHtml(node.content || "")}</code>`;
+    }
 }
 
 //Media nodes
 export const LinkHandler: RenderStrategy<string> = {
     type: "Link",
-    render: (node) => `<a href="${node.href}">${node.text}</a>`
+    render: (node, _children, ctx) => {
+        const cls = getClassName(ctx, node);
+        return `<a href="${node.href}"${cls ? ` class="${cls}"` : ""} target="_blank" rel="noopener">${node.text}</a>`;
+    }
 }
 
 export const ImageHandler: RenderStrategy<string> = {
     type: "Image",
-    render: (node) => `<img src="${node.src || ""}" alt="${node.alt || ""}"/>`
+    render: (node, _children, ctx) => {
+        const cls = getClassName(ctx, node);
+        return `<img src="${node.src || ""}" alt="${node.alt || ""}"${cls ? ` class="${cls}"` : ""}/>`;
+    }
 }
 
 //Leaf nodes
 export const HorizontalLineHandler: RenderStrategy<string> = {
     type: "HorizontalLine",
-    render: () => `<hr>`
+    render: (node, _children, ctx) => {
+        const cls = getClassName(ctx, node);
+        return `<hr${cls ? ` class="${cls}"` : ""}>`;
+    }
 }
 
 export const TextHandler: RenderStrategy<string> = {
@@ -105,16 +145,20 @@ export const TableHandler: RenderStrategy<string> = {
 export const HTMLBlockHandler: RenderStrategy<string> = {
     type: "HTMLBlock",
     render: (node, _children, ctx) => {
-        const val = node.value || ""
-        return ctx.options.converterOptions?.allowDangerousHtml ? val : escapeHtml(val)
+        const val = node.value || "";
+        const cls = getClassName(ctx, node);
+        const content = ctx.options.converterOptions?.allowDangerousHtml ? val : escapeHtml(val);
+        return cls ? `<div${cls ? ` class="${cls}"` : ""}>${content}</div>` : content;
     }
 }
 
 export const HTMLInlineHandler: RenderStrategy<string> = {
     type: "HTMLInline",
     render: (node, _children, ctx) => {
-        const val = node.value || ""
-        return ctx.options.converterOptions?.allowDangerousHtml ? val : escapeHtml(val)
+        const val = node.value || "";
+        const cls = getClassName(ctx, node);
+        const content = ctx.options.converterOptions?.allowDangerousHtml ? val : escapeHtml(val);
+        return cls ? `<span${cls ? ` class="${cls}"` : ""}>${content}</span>` : content;
     }
 }
 
@@ -123,16 +167,10 @@ export const FootnoteRefHandler: RenderStrategy<string> = {
     type: "FootnoteRef",
     render: (node, _children, ctx) => {
         if (node.id) {
-            const idx = ctx.footnoteResolver.getUsedRefById(node.id)
-            return `<sup id="fnref:${idx}"><a href="#fn:${idx}" class="footnote-ref">[${idx}]</a></sup>`
+            const idx = ctx.footnoteResolver.getUsedRefById(node.id);
+            const cls = getClassName(ctx, node, "footnote-ref");
+            return `<sup id="fnref:${idx}"><a href="#fn:${idx}"${cls ? ` class="${cls}"` : ""}>[${idx}]</a></sup>`;
         }
         return ""
     }
-}
-
-
-
-//Utilities
-function escapeHtml(str: string) {
-    return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
 }

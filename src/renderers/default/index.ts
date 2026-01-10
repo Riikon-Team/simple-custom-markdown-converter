@@ -4,6 +4,7 @@ import { ASTNode, TableRow } from "../../types/parser";
 import { RenderStrategy } from "../../types/renderer";
 import { FootnoteResolver } from "../../core/resolver/footnote-resolver";
 import * as Handlers from "./handler";
+import { getClassName } from "../../utilities/renderer-utils";
 
 export class DefaultRenderer implements IRenderer<string> {
     options: MarkdownOptions<string>
@@ -74,6 +75,7 @@ export class DefaultRenderer implements IRenderer<string> {
     }
 
     renderTable(node: ASTNode, children: string[]): string {
+        const cls = getClassName(this, node)
         if (node.type === "Table" && node.rows) {
             const header = node.rows.filter(row => row.isHeader)
             const body = node.rows.filter(row => !row.isHeader)
@@ -91,8 +93,8 @@ export class DefaultRenderer implements IRenderer<string> {
             const tHead = header.length ? `<thead>${header.map(renderRows).join("")}</thead>` : ""
             const tBody = body.length ? `<tbody>${body.map(renderRows).join("")}</tbody>` : ""
 
-            return `<table>${tHead}${tBody}</table>`
+            return `<table${cls ? ` class="${cls}"` : ""}>${tHead}${tBody}</table>`
         }
-        else return `<p>${children.join("\n")}</p>`
+        else return `<p${cls ? ` class="${cls}"` : ""}>${children.join("\n")}</p>`
     }
 }
