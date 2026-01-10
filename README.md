@@ -126,6 +126,53 @@ const options: MarkdownReactOptions = {
 };
 ```
 
+#### 3. Customize className (v1.2.1+)
+You can custom CSS class name for each elements
+- For HTML
+```ts
+const renderOptions: RenderOption<string> = {
+  className: {
+    Header: "common-h",
+    Header1: "main-title",
+    Paragraph: "text-muted"
+  }
+};
+
+const md = "# Title\nParagraph content";
+const result = convertMarkdownToHTML(md, { renderOptions });
+```
+
+Output:
+```html
+<h1 class="main-title" style="border-bottom: 1px solid #d1d9e0b3">Title</h1>
+<p class="text-muted">Paragraph content</p>
+```
+
+- For ReactJS
+```ts
+import { MarkdownComponent } from 'simple-customize-markdown-converter/react';
+
+const options: MarkdownOptions<React.ReactNode> = {
+  renderOptions: {
+    className: {
+      Header: "h-common",
+      Header2: "h2-special",
+      Bold: "font-heavy"
+    }
+  }
+};
+
+function App() {
+  return (
+    <MarkdownComponent 
+      content="# Hello React" 
+      className="md-body"
+      options
+    />
+  );
+}
+
+```
 ## Security
 By default, HTML tags in Markdown are escaped. To allow raw HTML, explicitly set `allowDangerousHtml: true` in `converterOptions`. Be sure only **enable** this for **trusted** content.
 

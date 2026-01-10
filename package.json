@@ -1,6 +1,6 @@
 {
   "name": "simple-customize-markdown-converter",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Transform Markdown into fully customizable HTML or React components.",
   "keywords": [
     "markdown",
