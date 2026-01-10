@@ -105,4 +105,26 @@ describe("React Renderer Testing", () => {
             '</div>'
         );
     });
+
+    test("Inject custom classNames in React rendering", () => {
+        const options: MarkdownOptions<React.ReactNode> = {
+            renderOptions: {
+                className: {
+                    Header: "h-common",
+                    Header2: "h2-special",
+                    Bold: "font-heavy"
+                }
+            }
+        };
+
+        const md = "## Header\n**bold**";
+        const result = convertMarkdownToReactNode(md, options);
+        const html = renderToString(result);
+
+        const expected = 
+            '<h2 class="h2-special" style="border-bottom:1px solid #d1d9e0b3">Header</h2>' + 
+            '<p><strong class="font-heavy">bold</strong></p>';
+
+        expect(html).toBe(expected);
+    });
 });

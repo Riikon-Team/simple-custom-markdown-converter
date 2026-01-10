@@ -13,7 +13,7 @@ describe("Test a whole markdown", () => {
         const expected =
             '<h1 style="border-bottom: 1px solid #d1d9e0b3">Hello everyone</h1>' +
             '<h4>Hello world</h4>' +
-            '<p>This is a <strong>simple</strong> paragraph with a <a href="https://example.com">link</a> and some <code>inline code</code>.</p>' +
+            '<p>This is a <strong>simple</strong> paragraph with a <a href="https://example.com" target=\"_blank\" rel=\"noopener\">link</a> and some <code>inline code</code>.</p>' +
             '<blockquote style="margin:0; padding:0 1em; color:#59636e; border-left:.25em solid #d1d9e0;"><p> This is a blockquote.</p></blockquote>' +
             '<img src="image.png" alt="Alt text"/>' +
             '<pre><code class="lang-js">console.log("Hello World")</code></pre>' +
@@ -45,7 +45,7 @@ describe("Test a whole markdown", () => {
     test("Render task list", () => {
         const md = "- [ ] Incomplete\n- [x] Complete"
         expect(convertMarkdownToHTML(md))
-            .toBe('<ul><li><input type="checkbox" disabled >Incomplete</li><li><input type="checkbox" disabled checked>Complete</li></ul>')
+            .toBe('<ul><li style=\"list-style-type: none\"><input type="checkbox" disabled >Incomplete</li><li style=\"list-style-type: none\"><input type="checkbox" disabled checked>Complete</li></ul>')
     })
 
     test("Render table", () => {
@@ -79,5 +79,24 @@ describe("Test a whole markdown", () => {
             '<section class="footnotes"><ol><li id="fn:1"><p>Definition of a. <a href="#fnref:1" class="footnote-backref">↩</a></p></li><li id="fn:2"><p>Definition of b. <a href="#fnref:2" class="footnote-backref">↩</a></p></li></ol></section>';
 
         expect(convertMarkdownToHTML(md)).toBe(expected);
+    })
+
+    test("Inject custom classNames in HTML rendering", () => {
+        const renderOptions: RenderOption<string> = {
+            className: {
+                Header: "common-h",
+                Header1: "main-title",
+                Paragraph: "text-muted"
+            }
+        };
+
+        const md = "# Title\nParagraph content";
+        const result = convertMarkdownToHTML(md, { renderOptions });
+
+        const expected = 
+            '<h1 class="main-title" style="border-bottom: 1px solid #d1d9e0b3">Title</h1>' +
+            '<p class="text-muted">Paragraph content</p>';
+
+        expect(result).toBe(expected);
     })
 })

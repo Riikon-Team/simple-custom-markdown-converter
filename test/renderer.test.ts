@@ -108,7 +108,7 @@ describe("DefaultRenderer (HTML)", () => {
         };
         const renderer = createRenderer();
         expect(renderer.render(node))
-            .toBe('<p>Check this <a href="https://google.com">Google</a> link</p>');
+            .toBe('<p>Check this <a href="https://google.com" target="_blank" rel="noopener">Google</a> link</p>');
     });
 
     test("Render image", () => {

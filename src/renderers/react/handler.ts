@@ -1,10 +1,11 @@
 import React, { ReactNode } from "react";
 import { RenderStrategy } from "../../types/renderer";
+import { getClassName } from "../../utilities/renderer-utils";
 
 //Base structural nodes
 export const DocumentHandler: RenderStrategy<ReactNode> = {
     type: "Document",
-    render: (_node, children, ctx) => React.createElement(
+    render: (node, children, ctx) => React.createElement(
         React.Fragment,
         null,
         ...children,
@@ -14,18 +15,22 @@ export const DocumentHandler: RenderStrategy<ReactNode> = {
 
 export const ParagraphHandler: RenderStrategy<ReactNode> = {
     type: "Paragraph",
-    render: (_node, children) => React.createElement("p", null, ...children)
+    render: (node, children, ctx) => React.createElement(
+        "p",
+        { className: getClassName(ctx, node) },
+        ...children
+    )
 };
 
 //Container nodes
 export const CodeBlockHandler: RenderStrategy<ReactNode> = {
     type: "CodeBlock",
-    render: (node) => React.createElement(
+    render: (node, _children, ctx) => React.createElement(
         "pre",
         null,
         React.createElement(
             "code",
-            { className: `lang-${node.lang}` },
+            { className: getClassName(ctx, node, `lang-${node.lang}`) },
             node.content || ""
         )
     )
@@ -33,11 +38,14 @@ export const CodeBlockHandler: RenderStrategy<ReactNode> = {
 
 export const HeaderHandler: RenderStrategy<ReactNode> = {
     type: "Header",
-    render: (node, children) => {
+    render: (node, children, ctx) => {
         if (!node.level) return React.createElement("p", null, ...children);
         return React.createElement(
             `h${node.level}`,
-            { style: { borderBottom: node.level <= 2 ? "1px solid #d1d9e0b3" : undefined } },
+            {
+                className: getClassName(ctx, node),
+                style: { borderBottom: node.level <= 2 ? "1px solid #d1d9e0b3" : undefined }
+            },
             ...children
         );
     }
@@ -45,9 +53,12 @@ export const HeaderHandler: RenderStrategy<ReactNode> = {
 
 export const QuoteHandler: RenderStrategy<ReactNode> = {
     type: "Quote",
-    render: (_node, children) => React.createElement(
+    render: (node, children, ctx) => React.createElement(
         "blockquote",
-        { style: { margin: "0", padding: "0 1em", color: "#59636e", borderLeft: ".25em solid #d1d9e0" } },
+        {
+            className: getClassName(ctx, node),
+            style: { margin: "0", padding: "0 1em", color: "#59636e", borderLeft: ".25em solid #d1d9e0" }
+        },
         ...children
     )
 };
@@ -55,23 +66,26 @@ export const QuoteHandler: RenderStrategy<ReactNode> = {
 //For list nodes
 export const ListHandler: RenderStrategy<ReactNode> = {
     type: "List",
-    render: (node, children) => React.createElement(
+    render: (node, children, ctx) => React.createElement(
         node.ordered ? "ol" : "ul",
-        null,
+        { className: getClassName(ctx, node), },
         ...children
     )
 };
 
 export const ListItemHandler: RenderStrategy<ReactNode> = {
     type: "ListItem",
-    render: (_node, children) => React.createElement("li", null, ...children)
+    render: (node, children, ctx) => React.createElement("li", { className: getClassName(ctx, node), }, ...children)
 };
 
 export const TaskItemHandler: RenderStrategy<ReactNode> = {
     type: "TaskItem",
-    render: (node, children) => React.createElement(
+    render: (node, children, ctx) => React.createElement(
         "li",
-        { style: { listStyleType: "none" } },
+        {
+            className: getClassName(ctx, node),
+            style: { listStyleType: "none" }
+        },
         React.createElement("input", {
             type: "checkbox",
             disabled: true,
@@ -85,37 +99,41 @@ export const TaskItemHandler: RenderStrategy<ReactNode> = {
 //Styling nodes
 export const BoldHandler: RenderStrategy<ReactNode> = {
     type: "Bold",
-    render: (_node, children) => React.createElement("strong", null, ...children)
+    render: (node, children, ctx) => React.createElement("strong", { className: getClassName(ctx, node), }, ...children)
 };
 
 export const ItalicHandler: RenderStrategy<ReactNode> = {
     type: "Italic",
-    render: (_node, children) => React.createElement("em", null, ...children)
+    render: (node, children, ctx) => React.createElement("em", { className: getClassName(ctx, node), }, ...children)
 };
 
 export const StrikethroughHandler: RenderStrategy<ReactNode> = {
     type: "Strikethrough",
-    render: (_node, children) => React.createElement("s", null, ...children)
+    render: (node, children, ctx) => React.createElement("s", { className: getClassName(ctx, node), }, ...children)
 };
 
 export const InlineCodeHandler: RenderStrategy<ReactNode> = {
     type: "InlineCode",
-    render: (node) => React.createElement("code", null, node.content || "")
+    render: (node, _children, ctx) => React.createElement("code", { className: getClassName(ctx, node), }, node.content || "")
 };
 
 //Media nodes
 export const LinkHandler: RenderStrategy<ReactNode> = {
     type: "Link",
-    render: (node) => React.createElement(
+    render: (node, _children, ctx) => React.createElement(
         "a",
-        { href: node.href, target: "_blank", rel: "noopener" },
+        {
+            className: getClassName(ctx, node),
+            href: node.href, target: "_blank", rel: "noopener"
+        },
         node.text
     )
 };
 
 export const ImageHandler: RenderStrategy<ReactNode> = {
     type: "Image",
-    render: (node) => React.createElement("img", {
+    render: (node, _children, ctx) => React.createElement("img", {
+        className: getClassName(ctx, node),
         src: node.src || "",
         alt: node.alt || ""
     })
@@ -124,7 +142,7 @@ export const ImageHandler: RenderStrategy<ReactNode> = {
 //Leaf nodes
 export const HorizontalLineHandler: RenderStrategy<ReactNode> = {
     type: "HorizontalLine",
-    render: () => React.createElement("hr")
+    render: (node, _children, ctx) => React.createElement("hr", { className: getClassName(ctx, node), })
 };
 
 export const TextHandler: RenderStrategy<ReactNode> = {
@@ -144,8 +162,8 @@ export const HTMLBlockHandler: RenderStrategy<ReactNode> = {
     render: (node, _children, ctx) => {
         const val = node.value || "";
         return ctx.options.converterOptions?.allowDangerousHtml
-            ? React.createElement("div", { dangerouslySetInnerHTML: { __html: val } })
-            : React.createElement("code", null, val);
+            ? React.createElement("div", { className: getClassName(ctx, node), dangerouslySetInnerHTML: { __html: val } })
+            : React.createElement("code", { className: getClassName(ctx, node), }, val);
     }
 };
 
@@ -154,8 +172,8 @@ export const HTMLInlineHandler: RenderStrategy<ReactNode> = {
     render: (node, _children, ctx) => {
         const val = node.value || "";
         return ctx.options.converterOptions?.allowDangerousHtml
-            ? React.createElement("span", { dangerouslySetInnerHTML: { __html: val } })
-            : React.createElement("code", null, val);
+            ? React.createElement("span", { className: getClassName(ctx, node), dangerouslySetInnerHTML: { __html: val } })
+            : React.createElement("code", { className: getClassName(ctx, node), }, val);
     }
 };
 
@@ -170,7 +188,10 @@ export const FootnoteRefHandler: RenderStrategy<ReactNode> = {
             { id: `fnref:${idx}` },
             React.createElement(
                 "a",
-                { href: `#fn:${idx}`, className: "footnote-ref" },
+                {
+                    className: getClassName(ctx, node, "footnote-ref"),
+                    href: `#fn:${idx}`,
+                },
                 `[${idx}]`
             )
         );
