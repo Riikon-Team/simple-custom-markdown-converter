@@ -11,12 +11,13 @@ export class ReactRenderer implements IRenderer<React.ReactNode> {
     options: MarkdownOptions<React.ReactNode>
     footnoteResolver: FootnoteResolver
 
-    private strategies: Map<string, RenderStrategy<React.ReactNode>> = new Map()
+    strategies: Map<string, RenderStrategy<React.ReactNode>> = new Map()
 
-    constructor(footnoteResolver: FootnoteResolver, options: MarkdownOptions<React.ReactNode> = {}) {
+    constructor(footnoteResolver: FootnoteResolver, options: MarkdownOptions<React.ReactNode> = {}, plugin: RenderStrategy<React.ReactNode>[] = []) {
         this.footnoteResolver = footnoteResolver;
         this.options = options;
         this.registerDefaultStrategies();
+        if (plugin.length > 0) plugin.forEach(p => this.registerStrategy(p))
     }
 
     private registerDefaultStrategies() {
@@ -142,5 +143,9 @@ export class ReactRenderer implements IRenderer<React.ReactNode> {
             )
         }
         else return React.createElement("p", { className: getClassName(this, node), }, ...children)
+    }
+
+    registerStrategy(strategy: RenderStrategy<React.ReactNode>): void {
+        this.strategies.set(strategy.type, strategy)
     }
 }

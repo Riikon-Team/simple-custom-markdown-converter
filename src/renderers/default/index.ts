@@ -10,13 +10,15 @@ export class DefaultRenderer implements IRenderer<string> {
     options: MarkdownOptions<string>
     footnoteResolver: FootnoteResolver
 
-    private strategies: Map<string, RenderStrategy<string>> = new Map()
+    strategies: Map<string, RenderStrategy<string>> = new Map()
 
-    constructor(footnoteResolver: FootnoteResolver, options: MarkdownOptions<string> = {}) {
+    constructor(footnoteResolver: FootnoteResolver, options: MarkdownOptions<string> = {}, plugin: RenderStrategy<string>[] = []) {
         this.footnoteResolver = footnoteResolver;
         this.options = options;
         this.registerDefaultStrategies();
+        if (plugin.length > 0) plugin.forEach(p => this.registerStrategy(p))
     }
+    
 
     private registerDefaultStrategies() {
         const listDefaultStrategy = [
@@ -96,5 +98,9 @@ export class DefaultRenderer implements IRenderer<string> {
             return `<table${cls ? ` class="${cls}"` : ""}>${tHead}${tBody}</table>`
         }
         else return `<p${cls ? ` class="${cls}"` : ""}>${children.join("\n")}</p>`
+    }
+
+    registerStrategy(strategy: RenderStrategy<string>): void {
+        this.strategies.set(strategy.type, strategy)
     }
 }
