@@ -158,7 +158,7 @@ export interface Token {
  * @property emit - A function handle tokenizing input to `Token`.
  */
 export interface TokenizerStrategy {
-    name: string
+    type: string
     /**
      * Checks if the current cursor position in the Lexer matches this syntax
      * @param lex The current `ILexer` instance providing access to the input string and cursor.

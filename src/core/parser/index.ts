@@ -6,7 +6,8 @@ import * as Handler from './handler'
 export interface IParser {
     listToken: Token[]
     pos: number
-
+    inlineStrategies: Map<string, ParsingStrategy>
+    blockStrategies: Map<string, ParsingStrategy>
     footNoteResolver: FootnoteResolver
 
     peek(offset: number): Token | null
@@ -14,6 +15,7 @@ export interface IParser {
     isEnd(): boolean
     parseBlocks(): ASTNode[]
     parseInlineUntil(stopType: Token["type"] | Token["type"][], isConsumeStopToken: boolean): ASTNode[]
+    registerStrategy(strategy: ParsingStrategy, type: "block" | "inline"): void
 }
 
 export class Parser implements IParser {
@@ -21,10 +23,10 @@ export class Parser implements IParser {
     pos: number = 0
     footNoteResolver: FootnoteResolver
 
-    private inlineStrategies: Map<string, ParsingStrategy>
-    private blockStrategies: Map<string, ParsingStrategy>
+    inlineStrategies: Map<string, ParsingStrategy>
+    blockStrategies: Map<string, ParsingStrategy>
 
-    constructor(listToken: Token[], footNoteResolver: FootnoteResolver) {
+    constructor(listToken: Token[], footNoteResolver: FootnoteResolver, plugin: { type: 'block' | 'inline', strategy: ParsingStrategy }[] = []) {
         this.listToken = listToken
         this.footNoteResolver = footNoteResolver
 
@@ -54,6 +56,8 @@ export class Parser implements IParser {
                 Handler.FootnoteRefHandler,
             ].map(ele => [ele.type, ele])
         )
+
+        if (plugin.length > 0) plugin.forEach(p => this.registerStrategy(p.strategy, p.type))
     }
 
     peek(offset: number = 0): Token | null {
@@ -67,6 +71,13 @@ export class Parser implements IParser {
 
     isEnd(): boolean {
         return this.peek()?.type === "EOF"
+    }
+
+    registerStrategy(strategy: ParsingStrategy, type: 'block' | 'inline'): void {
+        if (type === "block") {
+            this.blockStrategies.set(strategy.type, strategy)
+        }
+        else this.inlineStrategies.set(strategy.type, strategy)
     }
 
     /**

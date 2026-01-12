@@ -7,6 +7,7 @@ export interface ILexer {
     input: string
     listToken: Token[]
     listLevelFlag: number
+    strategies: TokenizerStrategy[]
 
     peek(offset?: number): string | null
     next(amount?: number): void
@@ -18,9 +19,10 @@ export interface ILexer {
     isEndOfFile(): boolean
     isStartOfLine(): boolean
     getLastToken(): Token
+    registerStrategy(strategy: TokenizerStrategy): void
 }
 
-export default class Lexer implements ILexer {
+export class Lexer implements ILexer {
     input: string
     pos: number = 0
     listToken: Token[] = []
@@ -28,34 +30,50 @@ export default class Lexer implements ILexer {
     // Flag for handle special syntax
     listLevelFlag: number = 0
 
-    private strategies: TokenizerStrategy[];
+    strategies: TokenizerStrategy[]
 
-    constructor(input: string) {
+    private coreStrategy: TokenizerStrategy[] = [
+        Handlers.EscapeCharacterHandler,
+        Handlers.CommentHandler,
+        Handlers.HtmlHandler,
+    ]
+
+    private pluginStrategy: TokenizerStrategy[] = []
+
+    private defaultStrategy: TokenizerStrategy[] = [
+        Handlers.HorizontalLineHandler,
+        Handlers.CodeBlockHandler,
+        Handlers.BoldHandler,
+        Handlers.StrikethroughHandler,
+        Handlers.FootnoteDefHandler,
+        Handlers.FootnoteRefHandler,
+        Handlers.TaskListHandler,
+        Handlers.UnorderedListHandler,
+        Handlers.OrderedListHandler,
+        Handlers.EndListHandler,
+        Handlers.TableHandler,
+        Handlers.InlineCodeHandler,
+        Handlers.HeaderHandler,
+        Handlers.ItalicHandler,
+        Handlers.QuoteHandler,
+        Handlers.LinkHandler,
+        Handlers.ImageHandler,
+        Handlers.NewLineHandler,
+    ]
+    
+    constructor(input: string, pluginStrategy: TokenizerStrategy[] = []) {
         this.input = input
+        this.pluginStrategy = pluginStrategy
+        this.strategies = []
+        this.setUpStrategy()
+    }
 
+    private setUpStrategy(): void {
         this.strategies = [
-            Handlers.EscapeCharacterHandler,
-            Handlers.CommentHandler,
-            Handlers.HtmlHandler,
-            Handlers.HorizontalLineHandler,
-            Handlers.CodeBlockHandler,
-            Handlers.BoldHandler,
-            Handlers.StrikethroughHandler,
-            Handlers.FootnoteDefHandler,
-            Handlers.FootnoteRefHandler,
-            Handlers.TaskListHandler,
-            Handlers.UnorderedListHandler,
-            Handlers.OrderedListHandler,
-            Handlers.EndListHandler,
-            Handlers.TableHandler,
-            Handlers.InlineCodeHandler,
-            Handlers.HeaderHandler,
-            Handlers.ItalicHandler,
-            Handlers.QuoteHandler,
-            Handlers.LinkHandler,
-            Handlers.ImageHandler,
-            Handlers.NewLineHandler,
-        ];
+            ...this.coreStrategy,
+            ...this.pluginStrategy,
+            ...this.defaultStrategy
+        ]
     }
 
     //Reset input and other attribute
@@ -143,6 +161,11 @@ export default class Lexer implements ILexer {
         }
 
         return result;
+    }
+
+    registerStrategy(strategy: TokenizerStrategy): void {
+        this.pluginStrategy.push(strategy)
+        this.setUpStrategy()
     }
 
     /**

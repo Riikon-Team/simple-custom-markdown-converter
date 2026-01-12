@@ -2,6 +2,8 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { convertMarkdownToReactNode, MarkdownComponent } from '../src/react'
 import { MarkdownOptions } from "../src/types/options";
+import { MarkdownPlugin } from "../src";
+import { createPlugin } from "../src/types/plugin";
 
 describe("React Renderer Testing", () => {
     const renderToString = (node: React.ReactNode) => renderToStaticMarkup(node as React.ReactElement);
@@ -121,10 +123,44 @@ describe("React Renderer Testing", () => {
         const result = convertMarkdownToReactNode(md, options);
         const html = renderToString(result);
 
-        const expected = 
-            '<h2 class="h2-special" style="border-bottom:1px solid #d1d9e0b3">Header</h2>' + 
+        const expected =
+            '<h2 class="h2-special" style="border-bottom:1px solid #d1d9e0b3">Header</h2>' +
             '<p><strong class="font-heavy">bold</strong></p>';
 
         expect(html).toBe(expected);
+    });
+
+    test("Plugin system: Custom Emoji (:omg:)", () => {
+        const emojiPlugin = createPlugin<string, React.ReactNode>(
+            "Emoji",
+            "inline",
+            {
+                match: (lexer) => lexer.peek() === ":",
+                emit: (lexer) => {
+                    lexer.next();
+                    const value = lexer.readUntil(":");
+                    lexer.listToken.push({ type: "Emoji", value });
+                }
+            },
+            {
+                execute: (parser, token) => {
+                    parser.next(1);
+                    return { type: "Emoji", value: token.value };
+                }
+            },
+            {
+                render: (node) => React.createElement(
+                    "span",
+                    { className: `emoji emoji-${node.value}` },
+                    "😲"
+                )
+            }
+        );
+
+        const md = "Hello :omg: world";
+
+        const result = convertMarkdownToReactNode(md, {}, [emojiPlugin]);
+        const html = renderToString(result);
+        expect(html).toBe('<p>Hello <span class="emoji emoji-omg">😲</span> world</p>');
     });
 });

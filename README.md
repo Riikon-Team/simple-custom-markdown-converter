@@ -173,6 +173,85 @@ function App() {
 }
 
 ```
+
+## Plugin (v1.3.0+)
+You can create a plugin to define custom sytax rule handler
+- With default converter
+```ts
+import { DefaultMarkdownConverter } from 'simple-customize-markdown-converter';
+
+const emojiPlugin = createPlugin<string, React.ReactNode>(
+  "Emoji",
+  "inline",
+  {
+      match: (lexer) => lexer.peek() === ":",
+      emit: (lexer) => {
+        lexer.next();
+        const value = lexer.readUntil(":");
+        lexer.listToken.push({ type: "Emoji", value });
+      }
+  },
+  {
+    execute: (parser, token) => {
+      parser.next(1);
+      return { type: "Emoji", value: token.value };
+    }
+  },
+  {
+    render: (node) => React.createElement(
+      "span",
+      { className: `emoji emoji-${node.value}` },
+      "😲"
+    )
+  }
+);
+
+const converter = new DefaultMarkdownConverter({}, plugin).convert(input)
+```
+
+- With React converter
+```tsx
+import { MarkdownComponent } from 'simple-customize-markdown-converter/react';
+
+function App() {
+  const emojiPlugin = createPlugin<string, React.ReactNode>(
+    "Emoji",
+    "inline",
+    {
+        match: (lexer) => lexer.peek() === ":",
+          emit: (lexer) => {
+            lexer.next();
+            const value = lexer.readUntil(":");
+            lexer.listToken.push({ type: "Emoji", value });
+          }
+    },
+    {
+      execute: (parser, token) => {
+        parser.next(1);
+        return { type: "Emoji", value: token.value };
+      }
+    },
+    {
+      render: (node) => React.createElement(
+        "span",
+        { className: `emoji emoji-${node.value}` },
+        "😲"
+      )
+    }
+  );
+
+  return (
+    <MarkdownComponent 
+      content="Hello :omg: world"
+      className="md-body"
+      options=options
+      plugin=[emojiPlugin]
+    />
+  );
+}
+```
+
+
 ## Security
 By default, HTML tags in Markdown are escaped. To allow raw HTML, explicitly set `allowDangerousHtml: true` in `converterOptions`. Be sure only **enable** this for **trusted** content.
 

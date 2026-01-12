@@ -1,7 +1,7 @@
 import { Parser } from "../src/core/parser";
 import { Token } from "../src/types/token";
 import { ASTNode } from "../src/types/parser";
-import Lexer from "../src/core/lexer";
+import { Lexer } from "../src/core/lexer";
 import { FootnoteResolver } from "../src/core/resolver/footnote-resolver";
 
 describe("Parser", () => {
@@ -129,7 +129,7 @@ describe("Parser", () => {
         const md = "| Name  | Age |\n|-------|----:|\n| Alice |  24 |\n| Bob   |  30 |";
         const tokens = new Lexer(md).tokenize();
         const parser = new Parser(tokens, new FootnoteResolver());
-        
+
         expect(parser.parse()).toEqual<ASTNode>({
             type: "Document",
             children: [{

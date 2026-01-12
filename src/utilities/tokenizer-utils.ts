@@ -1,4 +1,4 @@
-import Lexer, { ILexer } from "../core/lexer"
+import { Lexer, ILexer } from "../core/lexer"
 import { Token } from "../types/token"
 
 function handleTextBlock(lex: ILexer) {

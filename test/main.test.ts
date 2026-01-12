@@ -1,4 +1,4 @@
-import { convertMarkdownToHTML } from "../src/index";
+import { convertMarkdownToHTML, MarkdownPlugin } from "../src/index";
 import { RenderOption } from "../src/types/options/renderOptions";
 
 describe("Test a whole markdown", () => {
@@ -93,10 +93,44 @@ describe("Test a whole markdown", () => {
         const md = "# Title\nParagraph content";
         const result = convertMarkdownToHTML(md, { renderOptions });
 
-        const expected = 
+        const expected =
             '<h1 class="main-title" style="border-bottom: 1px solid #d1d9e0b3">Title</h1>' +
             '<p class="text-muted">Paragraph content</p>';
 
         expect(result).toBe(expected);
+    })
+
+    test("Plugin system: Custom Emoji (:omg:)", () => {
+        const emojiPlugin: MarkdownPlugin<string, string> = {
+            name: "Emoji",
+            type: "inline",
+            tokenizer: {
+                type: "Emoji",
+                match: (lexer) => lexer.peek() === ":",
+                emit: (lexer) => {
+                    lexer.next()
+                    lexer.listToken.push({ type: "Emoji", value: lexer.readUntil(":") })
+                }
+            },
+            parser: {
+                type: "Emoji",
+                execute: (parser, token) => {
+                    parser.next(1)
+                    return { type: "Emoji", value: token.value };
+                }
+            },
+            renderer: {
+                type: "Emoji",
+                render: (node) => {
+                    return `<span class="emoji emoji-${node.value}">😲</span>`;
+                }
+            }
+        };
+
+        const md = "Hello :omg: world";
+
+        const result = convertMarkdownToHTML(md, undefined, [emojiPlugin]);
+
+        expect(result).toBe('<p>Hello <span class="emoji emoji-omg">😲</span> world</p>');
     })
 })
