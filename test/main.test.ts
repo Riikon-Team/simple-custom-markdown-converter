@@ -101,11 +101,11 @@ describe("Test a whole markdown", () => {
     })
 
     test("Plugin system: Custom Emoji (:omg:)", () => {
-        const emojiPlugin: MarkdownPlugin<string> = {
+        const emojiPlugin: MarkdownPlugin<string, string> = {
             name: "Emoji",
             type: "inline",
             tokenizer: {
-                name: "Emoji",
+                type: "Emoji",
                 match: (lexer) => lexer.peek() === ":",
                 emit: (lexer) => {
                     lexer.next()

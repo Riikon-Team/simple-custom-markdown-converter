@@ -1,9 +1,8 @@
-import Lexer, { ILexer } from "."
-import { Token, TokenizerStrategy } from "../../types/token"
+import { TokenizerStrategy } from "../../types/token"
 import * as utils from "../../utilities/tokenizer-utils"
 
 const EscapeCharacterHandler: TokenizerStrategy = {
-    name: "EscapeCharacter",
+    type: "EscapeCharacter",
     match: (lex) => lex.peek() === "\\" && lex.peek(1) !== undefined,
     emit: (lex) => {
         lex.next(1);
@@ -12,13 +11,13 @@ const EscapeCharacterHandler: TokenizerStrategy = {
 }
 
 const CommentHandler: TokenizerStrategy = {
-    name: "Comment",
+    type: "Comment",
     match: (lex) => lex.startsWith("<!--"),
     emit: (lex) => lex.readUntilMatchString("-->", true)
 }
 
 const HtmlHandler: TokenizerStrategy = {
-    name: "HTML",
+    type: "HTML",
     match: (lex) => lex.peek() === "<",
     emit: (lex) => {
         //Handle comment
@@ -33,7 +32,7 @@ const HtmlHandler: TokenizerStrategy = {
 }
 
 const HorizontalLineHandler: TokenizerStrategy = {
-    name: "HorizontalLine",
+    type: "HorizontalLine",
     match: (lex) => /^([-*_])\1{2,}$/.test(lex.peekUntil("\n").trim()) && lex.getLastToken()?.type === "NewLine",
     emit: (lex) => {
         lex.next(2) //Skip two first characters, remain will be skiped after loop
@@ -43,7 +42,7 @@ const HorizontalLineHandler: TokenizerStrategy = {
 }
 
 const CodeBlockHandler: TokenizerStrategy = {
-    name: "CodeBlock",
+    type: "CodeBlock",
     match: (lex) => lex.startsWith("```"),
     emit: (lex) => {
         let lang = ""
@@ -69,7 +68,7 @@ const CodeBlockHandler: TokenizerStrategy = {
 }
 
 const BoldHandler: TokenizerStrategy = {
-    name: "Bold",
+    type: "Bold",
     match: (lex) => lex.startsWith("**"),
     emit: (lex) => {
         lex.listToken.push({ type: "Bold" })
@@ -78,7 +77,7 @@ const BoldHandler: TokenizerStrategy = {
 }
 
 const StrikethroughHandler: TokenizerStrategy = {
-    name: "Strikethrough",
+    type: "Strikethrough",
     match: (lex) => lex.startsWith("~~"),
     emit: (lex) => {
         lex.listToken.push({ type: "Strikethrough" })
@@ -88,7 +87,7 @@ const StrikethroughHandler: TokenizerStrategy = {
 
 // Footnote
 const FootnoteDefHandler: TokenizerStrategy = {
-    name: "FootnoteDef",
+    type: "FootnoteDef",
     match: (lex) => lex.isStartOfLine() && /^\[\^[^\]]+\]:/.test(lex.peekUntil("\n")),
     emit: (lex) => {
         const line = lex.readUntil("\n")
@@ -101,7 +100,7 @@ const FootnoteDefHandler: TokenizerStrategy = {
     }
 }
 const FootnoteRefHandler: TokenizerStrategy = {
-    name: "FootnoteRef",
+    type: "FootnoteRef",
     match: (lex) => lex.startsWith("[^"),
     emit: (lex) => {
         lex.next(2) //Skip [^
@@ -112,22 +111,22 @@ const FootnoteRefHandler: TokenizerStrategy = {
 
 //List
 const TaskListHandler: TokenizerStrategy = {
-    name: "TaskList",
+    type: "TaskList",
     match: (lex) => lex.isStartOfLine() && /^(\s*)([-*+]) \[( |x|X)\] /.test(lex.peekUntil("\n")),
     emit: (lex) => utils.handleList(lex, false, true)
 }
 const UnorderedListHandler: TokenizerStrategy = {
-    name: "UnorderList",
+    type: "UnorderList",
     match: (lex) => lex.isStartOfLine() && /^(\s*)([-*+]) /.test(lex.peekUntil("\n")),
     emit: (lex) => utils.handleList(lex, false, false)
 }
 const OrderedListHandler: TokenizerStrategy = {
-    name: "OrderedList",
+    type: "OrderedList",
     match: (lex) => lex.isStartOfLine() && /^(\s*)(\d+)\. /.test(lex.peekUntil("\n")),
     emit: (lex) => utils.handleList(lex, true, false)
 }
 const EndListHandler: TokenizerStrategy = {
-    name: "EndList",
+    type: "EndList",
     match: (lex) => lex.listLevelFlag > 0 && lex.isStartOfLine() && !/^(\s*)([-+*]|\d+\.) /.test(lex.peekUntil("\n")),
     emit: (lex) => {
         while (lex.listLevelFlag > 0) {
@@ -138,14 +137,14 @@ const EndListHandler: TokenizerStrategy = {
 
 //Table
 const TableHandler: TokenizerStrategy = {
-    name: "Table",
+    type: "Table",
     match: (lex) => lex.isStartOfLine() && /^\s*\|.*\|\s*$/.test(lex.peekUntil("\n")),
     emit: (lex) => utils.handleTable(lex)
 }
 
 //Other common syntax
 const InlineCodeHandler: TokenizerStrategy = {
-    name: "InlineCode",
+    type: "InlineCode",
     match: (lex) => lex.peek() === "`",
     emit: (lex) => {
         let content = ""
@@ -160,7 +159,7 @@ const InlineCodeHandler: TokenizerStrategy = {
 }
 
 const HeaderHandler: TokenizerStrategy = {
-    name: "Header",
+    type: "Header",
     match: (lex) => lex.peek() === "#",
     emit: (lex) => {
         let level = 0
@@ -180,7 +179,7 @@ const HeaderHandler: TokenizerStrategy = {
 }
 
 const ItalicHandler: TokenizerStrategy = {
-    name: "Italic",
+    type: "Italic",
     match: (lex) => lex.peek() === "*" || lex.peek() === "_",
     emit: (lex) => {
         lex.listToken.push({ type: "Italic" })
@@ -188,7 +187,7 @@ const ItalicHandler: TokenizerStrategy = {
 }
 
 const QuoteHandler: TokenizerStrategy = {
-    name: "Quote",
+    type: "Quote",
     match: (lex) => lex.peek() === ">",
     emit: (lex) => {
         lex.listToken.push({ type: "Quote" })
@@ -196,7 +195,7 @@ const QuoteHandler: TokenizerStrategy = {
 }
 
 const LinkHandler: TokenizerStrategy = {
-    name: "Link",
+    type: "Link",
     match: (lex) => lex.peek() === "[",
     emit: (lex) => {
         lex.next() //Skip [
@@ -214,7 +213,7 @@ const LinkHandler: TokenizerStrategy = {
 }
 
 const ImageHandler: TokenizerStrategy = {
-    name: "Image",
+    type: "Image",
     match: (lex) => lex.peek() === "!" && lex.peek(1) === "[",
     emit: (lex) => {
         lex.next() //Skip !
@@ -235,7 +234,7 @@ const ImageHandler: TokenizerStrategy = {
 }
 
 const NewLineHandler: TokenizerStrategy = {
-    name: "NewLine",
+    type: "NewLine",
     match: (lex) => lex.peek() === "\n",
     emit: (lex) => {
         lex.listToken.push({ type: "NewLine" })

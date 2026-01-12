@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { convertMarkdownToReactNode, MarkdownComponent } from '../src/react'
 import { MarkdownOptions } from "../src/types/options";
 import { MarkdownPlugin } from "../src";
+import { createPlugin } from "../src/types/plugin";
 
 describe("React Renderer Testing", () => {
     const renderToString = (node: React.ReactNode) => renderToStaticMarkup(node as React.ReactElement);
@@ -130,35 +131,31 @@ describe("React Renderer Testing", () => {
     });
 
     test("Plugin system: Custom Emoji (:omg:)", () => {
-        const emojiPlugin: MarkdownPlugin<React.ReactNode> = {
-            name: "Emoji",
-            type: "inline",
-            tokenizer: {
-                name: "Emoji",
+        const emojiPlugin = createPlugin<string, React.ReactNode>(
+            "Emoji",
+            "inline",
+            {
                 match: (lexer) => lexer.peek() === ":",
                 emit: (lexer) => {
-                    lexer.next()
-                    lexer.listToken.push({ type: "Emoji", value: lexer.readUntil(":") })
+                    lexer.next();
+                    const value = lexer.readUntil(":");
+                    lexer.listToken.push({ type: "Emoji", value });
                 }
             },
-            parser: {
-                type: "Emoji",
+            {
                 execute: (parser, token) => {
-                    parser.next(1)
+                    parser.next(1);
                     return { type: "Emoji", value: token.value };
                 }
             },
-            renderer: {
-                type: "Emoji",
-                render: (node) => {
-                    return React.createElement(
-                        "span",
-                        {className: `emoji emoji-${node.value}`},
-                        "😲"
-                    )
-                }
+            {
+                render: (node) => React.createElement(
+                    "span",
+                    { className: `emoji emoji-${node.value}` },
+                    "😲"
+                )
             }
-        };
+        );
 
         const md = "Hello :omg: world";
 

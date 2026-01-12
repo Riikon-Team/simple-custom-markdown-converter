@@ -1,4 +1,4 @@
-import Lexer from "../core/lexer";
+import { Lexer } from "../core/lexer";
 import { Parser } from "../core/parser";
 import { FootnoteResolver } from "../core/resolver/footnote-resolver";
 import { MarkdownOptions } from "./options";
@@ -11,7 +11,7 @@ export abstract class BaseConverter<TOutput> {
 
     constructor(
         protected options: MarkdownOptions<TOutput>,
-        protected plugin: MarkdownPlugin<TOutput>[]
+        protected plugin: MarkdownPlugin<string, TOutput>[]
     ) {
         this.footnoteResolver = new FootnoteResolver()
     }

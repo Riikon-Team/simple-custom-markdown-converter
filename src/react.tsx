@@ -26,7 +26,7 @@ export function convertMarkdownToReactNode(
         renderOptions: {},
         converterOptions: { allowDangerousHtml: false }
     },
-    plugin: MarkdownPlugin<React.ReactNode>[] = []
+    plugin: MarkdownPlugin<string, React.ReactNode>[] = []
 ): React.ReactNode {
     return new ReactMarkdownConverter(options, plugin).convert(input)
 }
@@ -37,6 +37,7 @@ export function convertMarkdownToReactNode(
  * @param props.content - The Markdown source to render.
  * @param props.options - Optional configuration for the renderer. 
  * @param props.className - Optional CSS classes for the wrapping `div` element.
+ * @param props.plugin - Optional plugin for additional syntax handler.
  * @example
  * ```tsx
  * <MarkdownComponent
@@ -50,7 +51,7 @@ export const MarkdownComponent: React.FC<{
     content: string,
     options?: MarkdownOptions<React.ReactNode>
     className?: string,
-    plugin?: MarkdownPlugin<React.ReactNode>[]
+    plugin?: MarkdownPlugin<string, React.ReactNode>[]
 }> = ({ content, className, options, plugin }) => {
     const rendered = React.useMemo(() => {
         return new ReactMarkdownConverter(options, plugin).convert(content)
@@ -60,7 +61,20 @@ export const MarkdownComponent: React.FC<{
 }
 
 /**
- * 
+ * React Markdown converter that outputs a React.ReactNode
+ * @extends BaseConverter<React.ReactNode>
+ * @example
+ * ```ts
+ * const converter = new ReactMarkdownConverter(
+ *  { 
+ *    renderOptions: { 
+ *      className: { Header: "my-title" } 
+ *    }
+ *  }, 
+ *  [MyCustomPlugin]
+ * );
+ * const html = converter.convert("# Hello");
+ * ```
  */
 export class ReactMarkdownConverter extends BaseConverter<React.ReactNode> {
     constructor(
@@ -68,7 +82,7 @@ export class ReactMarkdownConverter extends BaseConverter<React.ReactNode> {
             renderOptions: {},
             converterOptions: { allowDangerousHtml: false }
         },
-        plugin: MarkdownPlugin<React.ReactNode>[] = []
+        plugin: MarkdownPlugin<string, React.ReactNode>[] = []
     ) {
         super(options, plugin)
     }

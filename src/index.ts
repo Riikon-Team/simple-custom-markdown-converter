@@ -37,18 +37,34 @@ export function convertMarkdownToHTML(
         renderOptions: {},
         converterOptions: { allowDangerousHtml: false }
     },
-    plugin: MarkdownPlugin<string>[] = []
+    plugin: MarkdownPlugin<string, string>[] = []
 ): string {
     return new DefaultMarkdownConverter(options, plugin).convert(input)
 }
 
+/**
+ * Default Markdown converter that outputs a standard HTML string
+ * @extends BaseConverter<string>
+ * @example
+ * ```ts
+ * const converter = new DefaultMarkdownConverter(
+ *  { 
+ *    renderOptions: { 
+ *      className: { Header: "my-title" } 
+ *    }
+ *  }, 
+ *  [MyCustomPlugin]
+ * );
+ * const html = converter.convert("# Hello");
+ * ```
+ */
 export class DefaultMarkdownConverter extends BaseConverter<string> {
     constructor(
         options: MarkdownOptions<string> = {
             renderOptions: {},
             converterOptions: { allowDangerousHtml: false }
         },
-        plugin: MarkdownPlugin<string>[] = []
+        plugin: MarkdownPlugin<string, string>[] = []
     ) {
         super(options, plugin)
     }
