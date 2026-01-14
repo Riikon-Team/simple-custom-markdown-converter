@@ -2,9 +2,9 @@ import React from "react"
 import { ReactRenderer } from "./renderers/react"
 import { MarkdownOptions } from "./types/options"
 import { BaseConverter } from "./types/converter"
-import { MarkdownPlugin } from "./types/plugin"
+import { MarkdownPlugin, createPlugin } from "./types/plugin"
 
-export { ReactRenderer }
+export { ReactRenderer, createPlugin }
 
 /**
  * Convert a Markdown string into a ReactNode.

@@ -6,17 +6,18 @@ import { MarkdownOptions } from "./types/options"
 import { Token, TokenizerStrategy } from './types/token'
 import { ASTNode, ParsingStrategy } from './types/parser'
 import { RenderStrategy } from './types/renderer'
-import { MarkdownPlugin } from "./types/plugin"
+import { MarkdownPlugin, createPlugin } from "./types/plugin"
 import { BaseConverter } from "./types/converter"
 
 export {
     MarkdownOptions,
-    Token, TokenizerStrategy,
     ILexer, IParser, IRenderer,
     Lexer, Parser, DefaultRenderer,
+    Token, TokenizerStrategy,
     ASTNode, ParsingStrategy,
     RenderStrategy,
-    MarkdownPlugin,
+    MarkdownPlugin, createPlugin,
+    BaseConverter,
 }
 
 /**
